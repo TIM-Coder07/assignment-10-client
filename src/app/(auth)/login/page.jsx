@@ -237,7 +237,7 @@ export default function LoginPage() {
             text-slate-300
             "
           >
-            Don't have an account?
+            Don&rsquo;t have an account?
             <Link
               href="/registration"
               className="
