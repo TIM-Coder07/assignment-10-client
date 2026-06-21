@@ -35,7 +35,7 @@ export default function UserSideBar() {
 
           <a href="/dashboard/user/deliveryHistory">Delivery History</a>
 
-          <a href="/dashboard/user/myReadList#">Reading List</a>
+          <a href="/dashboard/user/myReadList">Reading List</a>
 
           <a href="#">My Reviews</a>
         </nav>

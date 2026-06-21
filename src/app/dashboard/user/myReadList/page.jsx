@@ -220,7 +220,7 @@ export default function MyReadingListPage() {
                 </div>
 
                 <Link
-                  href={`/books/${book._id}`}
+                  href={`/dashboard/user/myReadList/${book._id}`}
                   className="
                   mt-5
                   flex
