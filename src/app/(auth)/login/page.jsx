@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check } from "@gravity-ui/icons";
+import { Check, Loader2 } from "lucide-react";
 
 import {
   Button,
@@ -16,7 +16,10 @@ import {
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+
 import { authClient } from "@/lib/auth-client";
+
+import { BsGoogle } from "react-icons/bs";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,115 +35,108 @@ export default function LoginPage() {
 
     setIsLogging(true);
 
-    const formData = new FormData(e.currentTarget);
+    try {
+      const formData = new FormData(e.currentTarget);
 
-    const data = Object.fromEntries(formData);
+      const data = Object.fromEntries(formData);
 
-    const { error } = await authClient.signIn.email({
-      email: data.email,
+      const { error } = await authClient.signIn.email({
+        email: data.email,
 
-      password: data.password,
-    });
+        password: data.password,
+      });
 
-    if (error) {
-      toast.error(error.message || "Login failed");
+      if (error) {
+        toast.error(error.message || "Invalid email or password");
 
+        return;
+      }
+
+      // get user session
+
+      const { data: session } = await authClient.getSession();
+
+      const userRole = session?.user?.role;
+
+      console.log("USER ROLE:", userRole);
+
+      toast.success("Login successful");
+
+      if (userRole === "librarian") {
+        router.push("/dashboard/librarian");
+      } else {
+        router.push(redirectTo);
+      }
+    } catch (error) {
+      console.log(error);
+
+      toast.error("Login failed");
+    } finally {
       setIsLogging(false);
-
-      return;
     }
+  };
 
-    toast.success("Login successful");
+  const handleGoogleLogin = async () => {
+    try {
+      await authClient.signIn.social({
+        provider: "google",
 
-    router.push(redirectTo);
+        callbackURL: "/",
+      });
+    } catch (error) {
+      console.log(error);
 
-    setIsLogging(false);
+      toast.error("Google login failed");
+    }
   };
 
   return (
     <main
       className="
-      fixed
-      inset-0
-      flex
-      items-center
-      justify-center
-      overflow-y-auto
-      px-5
-      bg-gradient-to-br
-      from-indigo-950
-      via-slate-900
-      to-cyan-950
-      "
+fixed
+inset-0
+flex
+items-center
+justify-center
+px-5
+bg-gradient-to-br
+from-indigo-950
+via-slate-900
+to-cyan-950
+"
     >
-      {/* Background Glow */}
-
-      <div
-        className="
-        absolute
-        -top-20
-        -left-20
-        h-96
-        w-96
-        rounded-full
-        bg-purple-500/30
-        blur-3xl
-        "
-      />
-
-      <div
-        className="
-        absolute
-        -bottom-20
-        -right-20
-        h-96
-        w-96
-        rounded-full
-        bg-cyan-500/30
-        blur-3xl
-        "
-      />
-
       <motion.div
         initial={{
           opacity: 0,
           y: 40,
-          scale: 0.95,
         }}
         animate={{
           opacity: 1,
           y: 0,
-          scale: 1,
-        }}
-        transition={{
-          duration: 0.6,
         }}
         className="
-        relative
-        z-10
-        w-full
-        max-w-md
-        "
+w-full
+max-w-md
+"
       >
         <div
           className="
-          rounded-3xl
-          border
-          border-white/20
-          bg-white/10
-          backdrop-blur-xl
-          p-8
-          shadow-[0_20px_60px_rgba(0,0,0,0.35)]
-          "
+rounded-3xl
+border
+border-white/20
+bg-white/10
+backdrop-blur-xl
+p-8
+"
         >
           <h1
             className="
-            mb-6
-            text-center
-            text-3xl
-            font-bold
-            text-white
-            "
+text-3xl
+font-bold
+text-white
+text-center
+mb-6
+"
           >
             Welcome Back
           </h1>
@@ -148,53 +144,23 @@ export default function LoginPage() {
           <Form
             onSubmit={onSubmit}
             className="
-            flex
-            flex-col
-            gap-5
-            "
+flex
+flex-col
+gap-5
+"
           >
             <TextField name="email" type="email" isRequired>
-              <Label
-                className="
-                font-semibold
-                text-slate-200
-                "
-              >
-                Email Address
-              </Label>
+              <Label className="text-white">Email</Label>
 
-              <Input
-                placeholder="john@example.com"
-                className="
-                h-12
-                rounded-xl
-                text-white
-                placeholder:text-slate-400
-                "
-              />
+              <Input placeholder="example@gmail.com" />
 
               <FieldError />
             </TextField>
 
             <TextField name="password" type="password" isRequired>
-              <Label
-                className="
-                font-semibold
-                text-slate-200
-                "
-              >
-                Password
-              </Label>
+              <Label className="text-white">Password</Label>
 
-              <Input
-                placeholder="********"
-                className="
-                h-12
-                rounded-xl
-                text-white
-                placeholder:text-slate-400
-                "
-              />
+              <Input placeholder="********" />
 
               <FieldError />
             </TextField>
@@ -203,49 +169,78 @@ export default function LoginPage() {
               type="submit"
               isDisabled={isLogging}
               className="
-              h-12
-              rounded-xl
-              bg-gradient-to-r
-              from-indigo-600
-              via-purple-600
-              to-cyan-600
-              font-semibold
-              text-white
-              transition
-              hover:scale-[1.02]
-              "
+h-12
+w-full
+rounded-xl
+bg-gradient-to-r
+from-indigo-600
+via-purple-600
+to-cyan-600
+text-white
+"
             >
               {isLogging ? (
                 <>
-                  <span className="mr-2 animate-spin">⟳</span>
-                  Logging in...
+                  <Loader2
+                    className="
+animate-spin
+mr-2
+"
+                  />
+                  Logging...
                 </>
               ) : (
                 <>
-                  <Check size={18} />
+                  <Check className="mr-2" />
                   Login
                 </>
               )}
+            </Button>
+
+            <div
+              className="
+flex
+items-center
+gap-3
+text-slate-400
+text-sm
+"
+            >
+              <span className="flex-1 border-t border-white/20" />
+              OR
+              <span className="flex-1 border-t border-white/20" />
+            </div>
+
+            <Button
+              type="button"
+              onPress={handleGoogleLogin}
+              className="
+h-12
+w-full
+rounded-xl
+bg-white
+text-black
+"
+            >
+              <BsGoogle className="mr-2" />
+              Continue with Google
             </Button>
           </Form>
 
           <p
             className="
-            mt-5
-            text-center
-            text-sm
-            text-slate-300
-            "
+mt-5
+text-center
+text-slate-300
+"
           >
-            Don&rsquo;t have an account?
+            Don't have account?
             <Link
               href="/registration"
               className="
-              ml-1
-              font-semibold
-              text-cyan-400
-              hover:text-cyan-300
-              "
+ml-2
+text-cyan-400
+"
             >
               Create Account
             </Link>
