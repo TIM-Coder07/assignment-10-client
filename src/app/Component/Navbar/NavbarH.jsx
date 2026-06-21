@@ -3,16 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { HiMenuAlt3, HiX, HiChevronDown } from "react-icons/hi";
+import { HiMenuAlt3, HiX } from "react-icons/hi";
 
 import { authClient } from "@/lib/auth-client";
 import ProfileMenu from "../shared/ProfileMenu";
 
-
 const NavbarH = () => {
   const [open, setOpen] = useState(false);
-
-  const [dashboardOpen, setDashboardOpen] = useState(false);
 
   const pathname = usePathname();
 
@@ -34,31 +31,23 @@ const NavbarH = () => {
     },
   ];
 
-  const dashboardLinks = {
-    user: [
-      {
-        name: "User Dashboard",
-        href: "/dashboard/user",
-      },
-    ],
+  // Role Based Dashboard Route
 
-    librarian: [
-      {
-        name: "Librarian Dashboard",
-        href: "/dashboard/librarian",
-      },
-    ],
+  const dashboardRoute = () => {
+    if (userRole === "librarian") {
+      return "/dashboard/librarian";
+    }
 
-    admin: [
-      {
-        name: "Admin Dashboard",
-        href: "/dashboard/admin",
-      },
-    ],
+    if (userRole === "admin") {
+      return "/dashboard/admin";
+    }
+
+    return "/dashboard/user";
   };
 
-  const isActive = (href) =>
-    href === "/" ? pathname === href : pathname.startsWith(href);
+  const isActive = (href) => {
+    return href === "/" ? pathname === href : pathname.startsWith(href);
+  };
 
   const handleLogout = async () => {
     await authClient.signOut();
@@ -73,40 +62,40 @@ const NavbarH = () => {
   return (
     <nav
       className="
-      sticky
-      top-0
-      z-50
-      border-b
-      border-white/10
-      bg-white/70
-      dark:bg-gray-900/70
-      backdrop-blur-xl
-      "
+sticky
+top-0
+z-50
+border-b
+border-white/10
+bg-white/70
+dark:bg-gray-900/70
+backdrop-blur-xl
+"
     >
       <div
         className="
-        max-w-7xl
-        mx-auto
-        px-5
-        py-3
-        flex
-        items-center
-        justify-between
-        "
+max-w-7xl
+mx-auto
+px-5
+py-3
+flex
+items-center
+justify-between
+"
       >
         {/* Logo */}
 
         <Link href="/">
           <h1
             className="
-            text-2xl
-            font-extrabold
-            bg-gradient-to-r
-            from-purple-600
-            to-indigo-600
-            bg-clip-text
-            text-transparent
-            "
+text-2xl
+font-extrabold
+bg-gradient-to-r
+from-purple-600
+to-indigo-600
+bg-clip-text
+text-transparent
+"
           >
             BookNest
           </h1>
@@ -114,84 +103,63 @@ const NavbarH = () => {
 
         {/* Desktop Menu */}
 
-        <div className="hidden md:flex items-center gap-7">
+        <div
+          className="
+hidden
+md:flex
+items-center
+gap-7
+"
+        >
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`text-sm font-medium transition
+              className={`
+text-sm
+font-medium
+transition
 
-                  ${
-                    isActive(item.href)
-                      ? "text-purple-600"
-                      : "text-gray-700 dark:text-gray-300 hover:text-purple-600"
-                  }`}
+${
+  isActive(item.href)
+    ? "text-purple-600"
+    : "text-gray-700 dark:text-gray-300 hover:text-purple-600"
+}
+
+`}
             >
               {item.name}
             </Link>
           ))}
 
-          {/* Dashboard Dropdown */}
+          {/* Dashboard */}
 
           {session?.user && (
-            <div className="relative">
-              <button
-                onClick={() => setDashboardOpen(!dashboardOpen)}
-                className="
-                  flex
-                  items-center
-                  gap-1
-                  text-sm
-                  font-medium
-                  text-gray-700
-                  dark:text-gray-300
-                  "
-              >
-                Dashboard
-                <HiChevronDown />
-              </button>
-
-              {dashboardOpen && (
-                <div
-                  className="
-                      absolute
-                      top-8
-                      left-0
-                      w-52
-                      rounded-xl
-                      bg-white
-                      dark:bg-gray-800
-                      shadow-lg
-                      p-3
-                      "
-                >
-                  {dashboardLinks[userRole]?.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="
-                            block
-                            px-3
-                            py-2
-                            rounded-lg
-                            text-sm
-                            hover:bg-gray-100
-                            dark:hover:bg-gray-700
-                            "
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+            <button
+              onClick={() => router.push(dashboardRoute())}
+              className="
+text-sm
+font-medium
+text-gray-700
+dark:text-gray-300
+hover:text-purple-600
+"
+            >
+              Dashboard
+            </button>
           )}
         </div>
 
         {/* Desktop Right */}
 
-        <div className="hidden md:flex items-center gap-4">
-
+        <div
+          className="
+hidden
+md:flex
+items-center
+gap-4
+"
+        >
           {session?.user ? (
             <ProfileMenu handleLogout={handleLogout} />
           ) : (
@@ -199,9 +167,9 @@ const NavbarH = () => {
               <Link
                 href="/login"
                 className="
-                  text-sm
-                  hover:text-purple-600
-                  "
+text-sm
+hover:text-purple-600
+"
               >
                 Login
               </Link>
@@ -209,15 +177,15 @@ const NavbarH = () => {
               <Link
                 href="/registration"
                 className="
-                  px-5
-                  py-2
-                  rounded-full
-                  bg-gradient-to-r
-                  from-purple-600
-                  to-indigo-600
-                  text-white
-                  text-sm
-                  "
+px-5
+py-2
+rounded-full
+bg-gradient-to-r
+from-purple-600
+to-indigo-600
+text-white
+text-sm
+"
               >
                 Sign Up
               </Link>
@@ -230,9 +198,9 @@ const NavbarH = () => {
         <button
           onClick={() => setOpen(!open)}
           className="
-          md:hidden
-          text-3xl
-          "
+md:hidden
+text-3xl
+"
         >
           {open ? <HiX /> : <HiMenuAlt3 />}
         </button>
@@ -243,15 +211,15 @@ const NavbarH = () => {
       {open && (
         <div
           className="
-            md:hidden
-            px-6
-            pb-5
-            flex
-            flex-col
-            gap-4
-            bg-white
-            dark:bg-gray-900
-            "
+md:hidden
+px-6
+pb-5
+flex
+flex-col
+gap-4
+bg-white
+dark:bg-gray-900
+"
         >
           {navItems.map((item) => (
             <Link
@@ -259,41 +227,34 @@ const NavbarH = () => {
               href={item.href}
               onClick={() => setOpen(false)}
               className="
-                  text-sm
-                  font-medium
-                  "
+text-sm
+font-medium
+"
             >
               {item.name}
             </Link>
           ))}
 
           {session?.user && (
-            <>
-              <p className="font-semibold">Dashboard</p>
-
-              {dashboardLinks[userRole]?.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="
-                        ml-3
-                        text-sm
-                        "
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </>
+            <Link
+              href={dashboardRoute()}
+              onClick={() => setOpen(false)}
+              className="
+font-semibold
+text-purple-600
+"
+            >
+              Dashboard
+            </Link>
           )}
 
           {session?.user ? (
             <button
               onClick={handleLogout}
               className="
-                  text-left
-                  text-red-500
-                  "
+text-left
+text-red-500
+"
             >
               Logout
             </button>
