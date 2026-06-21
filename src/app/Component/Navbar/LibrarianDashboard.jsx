@@ -5,17 +5,17 @@ import { Button, Drawer } from "@heroui/react";
 import { HiMenuAlt3 } from "react-icons/hi";
 import Link from "next/link";
 
-export default function UserSideBar() {
+export default function LibrarianDashboard() {
   const [open, setOpen] = useState(false);
 
   const menuItems = [
     {
       name: "Overview",
-      href: "/dashboard/user/overview",
+      href: "/dashboard/librarian/overview",
     },
     {
       name: "Delivery History",
-      href: "/dashboard/user/deliveryHistory",
+      href: "/dashboard/librarian/addBook",
     },
     {
       name: "Reading List",
