@@ -14,7 +14,7 @@ export default function LibrarianDashboard() {
       href: "/dashboard/librarian/overview",
     },
     {
-      name: "Delivery History",
+      name: "Add Book",
       href: "/dashboard/librarian/addBook",
     },
     {
