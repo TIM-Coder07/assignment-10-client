@@ -56,9 +56,9 @@ export default function SignupPage() {
 
     const data = Object.fromEntries(formData);
 
-    console.log("FORM DATA", data);
+    data.role = role;
 
-    console.log("ROLE", role);
+    console.log("SUBMIT DATA:", data);
 
     if (data.password !== data.confirmPassword) {
       toast.error("Passwords do not match");
@@ -87,14 +87,14 @@ export default function SignupPage() {
 
       image: data.image,
 
-      callbackURL: "/",
+      role: role,
 
-      additionalFields: {
-        role: role,
-      },
+      callbackURL: "/",
     });
 
-    console.log("SIGNUP ERROR", error);
+    console.log("SIGNUP RESPONSE:", signupData);
+
+    console.log("SIGNUP ERROR:", error);
 
     if (error) {
       toast.error(error.message || "Signup failed");
@@ -106,22 +106,20 @@ export default function SignupPage() {
 
     toast.success("Account created successfully");
 
-    // get latest session
-
     const { data: session } = await authClient.getSession();
 
-    const userRole = session?.user?.role;
+    console.log("SESSION:", session);
 
-    console.log("CURRENT ROLE:", userRole);
+    const userRole = session?.user?.role;
 
     setIsCreating(false);
 
     if (userRole === "librarian") {
-      router.push("/dashboard/librarian");
+      router.push("/dashboard/librarian/overview");
     } else if (userRole === "admin") {
-      router.push("/dashboard/admin");
+      router.push("/dashboard/admin/overview");
     } else {
-      router.push("/dashboard/user");
+      router.push("/dashboard/user/overview");
     }
   };
 
@@ -285,8 +283,6 @@ gap-5
                   : "Passwords do not match"}
               </p>
             )}
-
-            {/* IMPORTANT */}
 
             <input type="hidden" name="role" value={role} />
 

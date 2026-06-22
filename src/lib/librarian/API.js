@@ -27,7 +27,7 @@ export const getBooksApi = async () => {
 
 export const updateBookStatusApi = async (id, status) => {
   const response = await fetch(
-    `${API_URL}/librarian/books/${id}`,
+    `${API_URL}/librarian/books/${id}/status`,
 
     {
       method: "PATCH",
@@ -43,4 +43,32 @@ export const updateBookStatusApi = async (id, status) => {
   );
 
   return response.json();
+};
+
+// DELETE BOOK
+export const deleteBookApi = async (id) => {
+  const response = await fetch(`${API_URL}/librarian/books/${id}`, {
+    method: "DELETE",
+  });
+
+  return await response.json();
+};
+
+// EDIT BOOK
+export const editBookApi = async (id, updatedData) => {
+  const response = await fetch(
+    `${API_URL}/librarian/books/${id}`,
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify(updatedData),
+    }
+  );
+
+
+  return await response.json();
 };

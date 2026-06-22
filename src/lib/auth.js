@@ -28,18 +28,12 @@ export const auth = betterAuth({
       role: {
         type: "string",
 
-        required: false,
+        required: true,
 
         defaultValue: "user",
 
         input: true,
       },
-    },
-  },
-
-  session: {
-    additionalFields: {
-      role: true,
     },
   },
 });
