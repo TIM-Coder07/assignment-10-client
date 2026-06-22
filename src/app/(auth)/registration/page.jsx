@@ -78,7 +78,7 @@ export default function SignupPage() {
       return;
     }
 
-    const { error } = await authClient.signUp.email({
+    const { data: signupData, error } = await authClient.signUp.email({
       name: data.name,
 
       email: data.email,
@@ -87,9 +87,11 @@ export default function SignupPage() {
 
       image: data.image,
 
-      role: role,
-
       callbackURL: "/",
+
+      additionalFields: {
+        role: role,
+      },
     });
 
     console.log("SIGNUP ERROR", error);
@@ -106,16 +108,18 @@ export default function SignupPage() {
 
     // get latest session
 
-    const session = await authClient.getSession();
+    const { data: session } = await authClient.getSession();
 
-    const userRole = session.data?.user?.role;
+    const userRole = session?.user?.role;
 
-    console.log("USER ROLE", userRole);
+    console.log("CURRENT ROLE:", userRole);
 
     setIsCreating(false);
 
     if (userRole === "librarian") {
       router.push("/dashboard/librarian");
+    } else if (userRole === "admin") {
+      router.push("/dashboard/admin");
     } else {
       router.push("/dashboard/user");
     }

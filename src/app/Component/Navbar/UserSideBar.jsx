@@ -9,7 +9,7 @@ import { authClient } from "@/lib/auth-client";
 export default function DashboardSidebar() {
   const [open, setOpen] = useState(false);
 
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   const role = session?.user?.role;
 
@@ -71,6 +71,12 @@ export default function DashboardSidebar() {
     ],
   };
 
+  // session load হওয়ার আগে wait করবে
+
+  if (isPending) {
+    return <div className="p-5 text-center">Loading Sidebar...</div>;
+  }
+
   const navItems = menus[role] || [];
 
   return (
@@ -87,43 +93,45 @@ export default function DashboardSidebar() {
 
       <aside
         className="
-    hidden
-    md:block
-    w-64
-    min-h-screen
-    bg-gray-900
-    text-white
-    p-6
-    "
+        hidden
+        md:block
+        w-64
+        min-h-screen
+        bg-gray-900
+        text-white
+        p-6
+        "
       >
         <h1
           className="
-    text-2xl
-    font-bold
-    mb-8
-    "
+          text-2xl
+          font-bold
+          mb-8
+          "
         >
           Dashboard
         </h1>
 
+        <p className="mb-5 text-sm text-purple-400">Role: {role}</p>
+
         <nav
           className="
-    flex
-    flex-col
-    gap-4
-    "
+          flex
+          flex-col
+          gap-3
+          "
         >
           {navItems.map((item) => (
             <Link
               key={item.path}
               href={item.path}
               className="
-        hover:bg-gray-800
-        rounded-lg
-        px-3
-        py-2
-        transition
-        "
+                rounded-lg
+                px-3
+                py-2
+                hover:bg-gray-800
+                transition
+                "
             >
               {item.name}
             </Link>
@@ -144,12 +152,14 @@ export default function DashboardSidebar() {
               </Drawer.Header>
 
               <Drawer.Body>
+                <p className="mb-5 text-purple-600">Role: {role}</p>
+
                 <nav
                   className="
-    flex
-    flex-col
-    gap-4
-    "
+                  flex
+                  flex-col
+                  gap-4
+                  "
                 >
                   {navItems.map((item) => (
                     <Link

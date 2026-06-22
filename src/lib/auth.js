@@ -36,4 +36,10 @@ export const auth = betterAuth({
       },
     },
   },
+
+  session: {
+    additionalFields: {
+      role: true,
+    },
+  },
 });

@@ -15,9 +15,25 @@ const NavbarH = () => {
 
   const router = useRouter();
 
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   const userRole = session?.user?.role;
+
+  const dashboardRoutes = {
+    user: "/dashboard/user/overview",
+
+    librarian: "/dashboard/librarian/overview",
+
+    admin: "/dashboard/admin",
+  };
+
+  const roleNames = {
+    user: "User",
+
+    librarian: "Librarian",
+
+    admin: "Admin",
+  };
 
   const navItems = [
     {
@@ -27,22 +43,18 @@ const NavbarH = () => {
 
     {
       name: "Browse Books",
-      href: "/books",
+      href: "/browseBook",
     },
   ];
 
-  // Role Based Dashboard Route
+  const goDashboard = () => {
+    const route = dashboardRoutes[userRole];
 
-  const dashboardRoute = () => {
-    if (userRole === "librarian") {
-      return "/dashboard/librarian";
+    if (route) {
+      router.push(route);
+    } else {
+      console.log("Role not found");
     }
-
-    if (userRole === "admin") {
-      return "/dashboard/admin";
-    }
-
-    return "/dashboard/user";
   };
 
   const isActive = (href) => {
@@ -66,9 +78,7 @@ sticky
 top-0
 z-50
 border-b
-border-white/10
 bg-white/70
-dark:bg-gray-900/70
 backdrop-blur-xl
 "
     >
@@ -79,69 +89,53 @@ mx-auto
 px-5
 py-3
 flex
-items-center
 justify-between
+items-center
 "
       >
-        {/* Logo */}
+        {/* LOGO */}
 
         <Link href="/">
           <h1
             className="
 text-2xl
-font-extrabold
-bg-gradient-to-r
-from-purple-600
-to-indigo-600
-bg-clip-text
-text-transparent
+font-bold
+text-purple-600
 "
           >
             BookNest
           </h1>
         </Link>
 
-        {/* Desktop Menu */}
+        {/* DESKTOP MENU */}
 
         <div
           className="
 hidden
 md:flex
-items-center
 gap-7
+items-center
 "
         >
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`
-text-sm
-font-medium
-transition
-
-${
-  isActive(item.href)
-    ? "text-purple-600"
-    : "text-gray-700 dark:text-gray-300 hover:text-purple-600"
-}
-
-`}
+              className={
+                isActive(item.href) ? "text-purple-600" : "text-gray-700"
+              }
             >
               {item.name}
             </Link>
           ))}
 
-          {/* Dashboard */}
+          {/* DASHBOARD */}
 
-          {session?.user && (
+          {session?.user && !isPending && (
             <button
-              onClick={() => router.push(dashboardRoute())}
+              onClick={goDashboard}
               className="
-text-sm
 font-medium
-text-gray-700
-dark:text-gray-300
 hover:text-purple-600
 "
             >
@@ -150,7 +144,7 @@ hover:text-purple-600
           )}
         </div>
 
-        {/* Desktop Right */}
+        {/* RIGHT */}
 
         <div
           className="
@@ -161,18 +155,26 @@ gap-4
 "
         >
           {session?.user ? (
-            <ProfileMenu handleLogout={handleLogout} />
-          ) : (
             <>
-              <Link
-                href="/login"
+              <div
                 className="
+px-3
+py-1
+rounded-full
+bg-purple-100
+text-purple-700
 text-sm
-hover:text-purple-600
+font-semibold
 "
               >
-                Login
-              </Link>
+                Role: {roleNames[userRole] || "Loading..."}
+              </div>
+
+              <ProfileMenu handleLogout={handleLogout} />
+            </>
+          ) : (
+            <>
+              <Link href="/login">Login</Link>
 
               <Link
                 href="/registration"
@@ -180,11 +182,8 @@ hover:text-purple-600
 px-5
 py-2
 rounded-full
-bg-gradient-to-r
-from-purple-600
-to-indigo-600
+bg-purple-600
 text-white
-text-sm
 "
               >
                 Sign Up
@@ -193,7 +192,7 @@ text-sm
           )}
         </div>
 
-        {/* Mobile Button */}
+        {/* MOBILE BUTTON */}
 
         <button
           onClick={() => setOpen(!open)}
@@ -206,7 +205,7 @@ text-3xl
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* MOBILE MENU */}
 
       {open && (
         <div
@@ -217,8 +216,6 @@ pb-5
 flex
 flex-col
 gap-4
-bg-white
-dark:bg-gray-900
 "
         >
           {navItems.map((item) => (
@@ -226,47 +223,46 @@ dark:bg-gray-900
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className="
-text-sm
-font-medium
-"
             >
               {item.name}
             </Link>
           ))}
 
           {session?.user && (
-            <Link
-              href={dashboardRoute()}
-              onClick={() => setOpen(false)}
-              className="
-font-semibold
+            <>
+              <p
+                className="
 text-purple-600
+font-semibold
 "
-            >
-              Dashboard
-            </Link>
+              >
+                Role: {roleNames[userRole]}
+              </p>
+
+              <button
+                onClick={goDashboard}
+                className="
+text-left
+"
+              >
+                Dashboard
+              </button>
+            </>
           )}
 
           {session?.user ? (
             <button
               onClick={handleLogout}
               className="
-text-left
 text-red-500
+text-left
 "
             >
               Logout
             </button>
           ) : (
-            <>
-              <Link href="/login">Login</Link>
-
-              <Link href="/registration">Sign Up</Link>
-            </>
+            <Link href="/login">Login</Link>
           )}
-
-          <ThemeToggle />
         </div>
       )}
     </nav>
