@@ -15,8 +15,7 @@ export const addBookApi = async (bookData) => {
   return await response.json();
 };
 
-// GET BOOKS
-
+// GET BOOKS 
 export const getBooksApi = async () => {
   const response = await fetch(`${API_URL}/librarian/books`);
 

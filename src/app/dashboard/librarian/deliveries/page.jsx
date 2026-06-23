@@ -1,39 +1,46 @@
 "use client";
 
 import { useState } from "react";
+
 import { motion } from "framer-motion";
+
 import toast from "react-hot-toast";
+
 import { Truck } from "lucide-react";
 
+import { authClient } from "@/lib/auth-client";
+import { getLibrarianDeliveries, updateDeliveryStatus } from "@/lib/librarian/deliveryAPI";
+
 export default function ManageDeliveriesPage() {
-  // Later replace with API data
-  const [deliveries, setDeliveries] = useState([
-    {
-      id: 1,
-      client: "John Smith",
-      book: "Atomic Habits",
-      date: "2026-06-20",
-      status: "Pending",
-    },
+  const [deliveries, setDeliveries] = useState([]);
 
-    {
-      id: 2,
-      client: "Sarah Khan",
-      book: "Clean Code",
-      date: "2026-06-18",
-      status: "Dispatched",
-    },
+  const [loading, setLoading] = useState(false);
 
-    {
-      id: 3,
-      client: "David Lee",
-      book: "The Alchemist",
-      date: "2026-06-15",
-      status: "Delivered",
-    },
-  ]);
+  const loadDeliveries = async () => {
+    try {
+      setLoading(true);
 
-  const updateStatus = (id, currentStatus) => {
+      const { data: session } = await authClient.getSession();
+
+      const email = session?.user?.email;
+
+      if (!email) {
+        toast.error("User not found");
+
+        return;
+      }
+
+      const data = await getLibrarianDeliveries(email);
+
+      setDeliveries(data);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStatus = async (id, currentStatus) => {
     let nextStatus = currentStatus;
 
     if (currentStatus === "Pending") {
@@ -42,18 +49,24 @@ export default function ManageDeliveriesPage() {
       nextStatus = "Delivered";
     }
 
-    setDeliveries((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: nextStatus,
-            }
-          : item,
-      ),
-    );
+    try {
+      await updateDeliveryStatus(id, nextStatus);
 
-    toast.success(`Status updated to ${nextStatus}`);
+      setDeliveries((prev) =>
+        prev.map((item) =>
+          item._id === id
+            ? {
+                ...item,
+                status: nextStatus,
+              }
+            : item,
+        ),
+      );
+
+      toast.success(`Status updated to ${nextStatus}`);
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const statusStyle = (status) => {
@@ -70,8 +83,6 @@ export default function ManageDeliveriesPage() {
 
   return (
     <div className="p-5 md:p-8">
-      {/* Header */}
-
       <motion.div
         initial={{
           opacity: 0,
@@ -83,49 +94,44 @@ export default function ManageDeliveriesPage() {
         }}
         className="mb-8"
       >
-        <h1
-          className="
-        text-3xl
-        font-bold
-        "
-        >
-          Manage Deliveries
-        </h1>
+        <h1 className="text-3xl font-bold">Manage Deliveries</h1>
 
-        <p
-          className="
-        text-gray-500
-        mt-2
-        "
-        >
+        <p className="text-gray-500 mt-2">
           Track and update customer book deliveries
         </p>
-      </motion.div>
 
-      {/* Table */}
+        <button
+          onClick={loadDeliveries}
+          className="
+mt-5
+bg-indigo-600
+text-white
+px-5
+py-2
+rounded-xl
+"
+        >
+          {loading ? "Loading..." : "Load Deliveries"}
+        </button>
+      </motion.div>
 
       <div
         className="
-      overflow-x-auto
-      bg-white
-      rounded-3xl
-      shadow
-      border
-      "
+overflow-x-auto
+bg-white
+rounded-3xl
+shadow
+border
+"
       >
         <table
           className="
-      w-full
-      min-w-[700px]
-      "
+w-full
+min-w-[700px]
+"
         >
           <thead>
-            <tr
-              className="
-        border-b
-        bg-gray-50
-        "
-            >
+            <tr className="border-b bg-gray-50">
               <th className="p-4 text-left">Client Name</th>
 
               <th className="p-4 text-left">Book Title</th>
@@ -141,29 +147,35 @@ export default function ManageDeliveriesPage() {
           <tbody>
             {deliveries.map((delivery) => (
               <tr
-                key={delivery.id}
+                key={delivery._id}
                 className="
-        border-b
-        hover:bg-gray-50
-        transition
-        "
+border-b
+hover:bg-gray-50
+"
               >
-                <td className="p-4 font-medium">{delivery.client}</td>
+                <td className="p-4">{delivery.userName}</td>
 
-                <td className="p-4">{delivery.book}</td>
+                <td className="p-4">{delivery.bookTitle}</td>
 
-                <td className="p-4 text-gray-500">{delivery.date}</td>
+                <td className="p-4 text-gray-500">{delivery.requestedAt}</td>
 
                 <td className="p-4">
                   <span
                     className={`
-        px-3
-        py-1
-        rounded-full
-        text-xs
-        font-semibold
-        ${statusStyle(delivery.status)}
-        `}
+
+px-3
+
+py-1
+
+rounded-full
+
+text-xs
+
+font-semibold
+
+${statusStyle(delivery.status)}
+
+`}
                   >
                     {delivery.status}
                   </span>
@@ -172,19 +184,23 @@ export default function ManageDeliveriesPage() {
                 <td className="p-4">
                   {delivery.status !== "Delivered" && (
                     <button
-                      onClick={() => updateStatus(delivery.id, delivery.status)}
+                      onClick={() =>
+                        updateStatus(
+                          delivery._id,
+
+                          delivery.status,
+                        )
+                      }
                       className="
-          flex
-          items-center
-          gap-2
-          rounded-xl
-          bg-indigo-600
-          px-4
-          py-2
-          text-white
-          text-sm
-          hover:bg-indigo-700
-          "
+flex
+items-center
+gap-2
+bg-indigo-600
+text-white
+px-4
+py-2
+rounded-xl
+"
                     >
                       <Truck size={16} />
 
@@ -195,13 +211,7 @@ export default function ManageDeliveriesPage() {
                   )}
 
                   {delivery.status === "Delivered" && (
-                    <span
-                      className="
-          text-green-600
-          font-semibold
-          text-sm
-          "
-                    >
+                    <span className="text-green-600 font-semibold">
                       Completed
                     </span>
                   )}
