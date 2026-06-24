@@ -1,5 +1,14 @@
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
+// USER getUserDeliveries
+export const getUserDeliveries = async (email) => {
+  const res = await fetch(
+    `${API_URL}/deliveries/user/${email}`
+  );
+
+  return res.json();
+};
+
 export const createDeliveryRequest = async (data) => {
   const res = await fetch(`${API_URL}/deliveries`, {
     method: "POST",

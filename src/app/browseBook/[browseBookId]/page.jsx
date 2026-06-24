@@ -1,10 +1,12 @@
 import DeliveryButton from "@/app/Component/ui/DeliveryButton";
+import ReviewForm from "@/app/Component/ui/ReviewsForm";
+import { auth } from "@/lib/auth";
 import { getBrowseBookDetailsApi } from "@/lib/browseBook/browseBookAPI";
 
 import { Button } from "@heroui/react";
 
 import { BookOpen, Heart } from "lucide-react";
-
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +20,15 @@ export default async function BrowseBookDetailsPage({ params }) {
   }
 
   const book = result.book;
+  const user = await auth.api.getSession({
+    headers: await headers(),
+  });  
 
   return (
     <main
       className="
       min-h-screen
-      bg-gradient-to-br
+      bg-linear-to-br
       from-slate-100
       via-white
       to-indigo-100
@@ -217,6 +222,7 @@ export default async function BrowseBookDetailsPage({ params }) {
           </div>
         </div>
       </div>
+      <ReviewForm book={book} user={user.user}></ReviewForm>
     </main>
   );
 }

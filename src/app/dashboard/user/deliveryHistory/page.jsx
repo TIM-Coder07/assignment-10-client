@@ -1,60 +1,47 @@
 "use client";
 
+import { useState } from "react";
+
 import { motion } from "framer-motion";
+
 import { Truck } from "lucide-react";
 
+import toast from "react-hot-toast";
+
+import { authClient } from "@/lib/auth-client";
+
+import { getUserDeliveries } from "@/lib/librarian/deliveryAPI";
+
 export default function DeliveryHistoryPage() {
-  // 🔥 Later replace with backend API data
+  const [deliveries, setDeliveries] = useState([]);
 
-  const deliveries = [
-    {
-      id: 1,
+  const [loading, setLoading] = useState(false);
 
-      title: "The Alchemist",
+  const loadHistory = async () => {
+    try {
+      setLoading(true);
 
-      fee: 120,
+      const { data: session } = await authClient.getSession();
 
-      date: "2026-06-10",
+      const email = session?.user?.email;
 
-      status: "Pending",
-    },
+      if (!email) {
+        toast.error("User not found");
 
-    {
-      id: 2,
+        return;
+      }
 
-      title: "Atomic Habits",
+      const data = await getUserDeliveries(email);
 
-      fee: 150,
+      setDeliveries(data);
+    } catch (error) {
+      console.log(error);
 
-      date: "2026-06-05",
-
-      status: "Dispatched",
-    },
-
-    {
-      id: 3,
-
-      title: "Clean Code",
-
-      fee: 200,
-
-      date: "2026-05-28",
-
-      status: "Delivered",
-    },
-
-    {
-      id: 4,
-
-      title: "Rich Dad Poor Dad",
-
-      fee: 100,
-
-      date: "2026-05-20",
-
-      status: "Pending",
-    },
-  ];
+      toast.error("Failed to load delivery history");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const statusStyle = (status) => {
     if (status === "Pending") {
@@ -68,6 +55,8 @@ export default function DeliveryHistoryPage() {
     if (status === "Delivered") {
       return "bg-green-100 text-green-700";
     }
+
+    return "bg-gray-100 text-gray-700";
   };
 
   return (
@@ -128,6 +117,23 @@ export default function DeliveryHistoryPage() {
             </p>
           </div>
         </div>
+
+        <button
+          onClick={loadHistory}
+          disabled={loading}
+          className="
+          mt-5
+          rounded-xl
+          bg-indigo-600
+          px-5
+          py-2
+          text-white
+          hover:bg-indigo-700
+          disabled:opacity-50
+          "
+        >
+          {loading ? "Loading..." : "Load History"}
+        </button>
       </motion.div>
 
       {/* Table */}
@@ -167,48 +173,35 @@ export default function DeliveryHistoryPage() {
               "
             >
               <tr>
-                <th
-                  className="
-                  text-left
-                  p-4
-                  "
-                >
-                  Book Title
-                </th>
+                <th className="text-left p-4">Book Title</th>
 
-                <th
-                  className="
-                  text-left
-                  p-4
-                  "
-                >
-                  Delivery Fee
-                </th>
+                <th className="text-left p-4">Delivery Fee</th>
 
-                <th
-                  className="
-                  text-left
-                  p-4
-                  "
-                >
-                  Request Date
-                </th>
+                <th className="text-left p-4">Request Date</th>
 
-                <th
-                  className="
-                  text-left
-                  p-4
-                  "
-                >
-                  Status
-                </th>
+                <th className="text-left p-4">Status</th>
               </tr>
             </thead>
 
             <tbody>
+              {deliveries.length === 0 && !loading && (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="
+                      p-10
+                      text-center
+                      text-gray-500
+                      "
+                  >
+                    No delivery history found
+                  </td>
+                </tr>
+              )}
+
               {deliveries.map((item, index) => (
                 <motion.tr
-                  key={item.id}
+                  key={item._id}
                   initial={{
                     opacity: 0,
                     y: 10,
@@ -218,7 +211,7 @@ export default function DeliveryHistoryPage() {
                     y: 0,
                   }}
                   transition={{
-                    delay: index * 0.1,
+                    delay: index * 0.05,
                   }}
                   className="
                     border-b
@@ -231,16 +224,10 @@ export default function DeliveryHistoryPage() {
                       font-medium
                       "
                   >
-                    {item.title}
+                    {item.bookTitle}
                   </td>
 
-                  <td
-                    className="
-                      p-4
-                      "
-                  >
-                    ৳{item.fee}
-                  </td>
+                  <td className="p-4">৳{item.deliveryFee}</td>
 
                   <td
                     className="
@@ -248,14 +235,12 @@ export default function DeliveryHistoryPage() {
                       text-gray-500
                       "
                   >
-                    {item.date}
+                    {item.requestedAt
+                      ? new Date(item.requestedAt).toLocaleDateString()
+                      : "N/A"}
                   </td>
 
-                  <td
-                    className="
-                      p-4
-                      "
-                  >
+                  <td className="p-4">
                     <span
                       className={`
                         px-3
