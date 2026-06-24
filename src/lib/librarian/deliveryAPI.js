@@ -1,4 +1,4 @@
-const API_URL_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 export const createDeliveryRequest = async (data) => {
   const res = await fetch(`${API_URL}/deliveries`, {

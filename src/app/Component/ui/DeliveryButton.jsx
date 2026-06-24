@@ -8,9 +8,13 @@ import { authClient } from "@/lib/auth-client";
 import { createDeliveryRequest } from "@/lib/librarian/deliveryAPI";
 
 export default function DeliveryButton({ book }) {
+  console.log('book',book);
+  
   const handleDeliveryRequest = async () => {
     try {
       const { data: session } = await authClient.getSession();
+      console.log('session', session.user.email);
+      
 
       if (!session?.user) {
         toast.error("Please login first");

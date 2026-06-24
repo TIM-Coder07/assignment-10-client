@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 
 import { Loader2, Upload, BookPlus, ImageIcon } from "lucide-react";
 import { addBookApi } from "@/lib/librarian/API";
+import { authClient } from "@/lib/auth-client";
 
 export default function AddBookPage() {
   const [loading, setLoading] = useState(false);
@@ -64,49 +65,60 @@ export default function AddBookPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!image) {
+      toast.error("Please select a book cover image");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
+      const { data: session } = await authClient.getSession();
 
-      // upload image first
+      if (!session?.user) {
+        toast.error("Please login first");
+        return;
+      }
 
+      // Image Upload
       const imageUrl = await uploadImage();
 
+      const form = e.target;
+
       const bookData = {
-        title: formData.get("title"),
-
-        author: formData.get("author"),
-
-        description: formData.get("description"),
-
-        deliveryFee: Number(formData.get("deliveryFee")),
+        title: form.title.value,
+        author: form.author.value,
+        description: form.description.value,
+        deliveryFee: Number(form.deliveryFee.value),
 
         category,
-
         image: imageUrl,
 
+        librarianId: session.user.id,
+        librarianName: session.user.name,
+        librarianEmail: session.user.email,
+
         status: "Pending Approval",
+
+        createdAt: new Date(),
       };
 
-      // Backend API Call
+      console.log("BOOK DATA:", bookData);
 
       const result = await addBookApi(bookData);
 
       if (result.insertedId) {
         toast.success("Book submitted for approval");
 
-        e.target.reset();
+        form.reset();
 
         setImage(null);
-
         setCategory("Fiction");
       } else {
         toast.error("Failed to add book");
       }
     } catch (error) {
       console.log(error);
-
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
