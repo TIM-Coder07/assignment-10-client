@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Clock3, DollarSign } from "lucide-react";
 
@@ -14,87 +15,47 @@ import {
 } from "recharts";
 
 export default function UserOverviewPage() {
-  // 🔥 Later replace this data from backend API
+  const [overview, setOverview] = useState({});
 
-  const stats = {
-    totalBooksRead: 24,
+  // Temporary test email
+  const userEmail = "user@gmail.com";
 
-    pendingDeliveries: 3,
-
-    totalSpent: 1250,
-  };
-
-  // 🔥 Chart data from backend later
-
-  const chartData = [
-    {
-      month: "Jan",
-      books: 4,
-    },
-
-    {
-      month: "Feb",
-      books: 7,
-    },
-
-    {
-      month: "Mar",
-      books: 3,
-    },
-
-    {
-      month: "Apr",
-      books: 10,
-    },
-
-    {
-      month: "May",
-      books: 6,
-    },
-  ];
+  useEffect(() => {
+    fetch(`http://localhost:5000/user/overview/${userEmail}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("USER OVERVIEW:", data);
+        setOverview(data);
+      })
+      .catch(console.error);
+  }, []);
 
   const cards = [
     {
       title: "Total Books Read",
-
-      value: stats.totalBooksRead,
-
+      value: overview.totalBooksRead || 0,
       icon: BookOpen,
-
       color: "from-purple-600 to-indigo-600",
     },
 
     {
       title: "Pending Deliveries",
-
-      value: stats.pendingDeliveries,
-
+      value: overview.pendingDeliveries || 0,
       icon: Clock3,
-
       color: "from-orange-500 to-red-500",
     },
 
     {
       title: "Total Spent",
-
-      value: `৳${stats.totalSpent}`,
-
+      value: `৳${overview.totalSpent || 0}`,
       icon: DollarSign,
-
       color: "from-green-500 to-emerald-600",
     },
   ];
 
   return (
-    <div
-      className="
-      p-5
-      md:p-8
-      space-y-8
-      "
-    >
+    <div className="space-y-8 p-5 md:p-8">
       {/* Header */}
-
       <motion.div
         initial={{
           opacity: 0,
@@ -105,36 +66,15 @@ export default function UserOverviewPage() {
           y: 0,
         }}
       >
-        <h1
-          className="
-          text-3xl
-          font-bold
-          "
-        >
-          Dashboard Overview
-        </h1>
+        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
 
-        <p
-          className="
-          text-gray-500
-          mt-2
-          "
-        >
+        <p className="mt-2 text-gray-500">
           Track your reading activity and deliveries
         </p>
       </motion.div>
 
       {/* Stats Cards */}
-
-      <div
-        className="
-        grid
-        grid-cols-1
-        sm:grid-cols-2
-        lg:grid-cols-3
-        gap-6
-        "
-      >
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((item, index) => {
           const Icon = item.icon;
 
@@ -152,45 +92,14 @@ export default function UserOverviewPage() {
               transition={{
                 delay: index * 0.1,
               }}
-              className="
-                rounded-2xl
-                p-6
-                text-white
-                bg-gradient-to-r
-                shadow-lg
-                "
-              style={{
-                backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))`,
-              }}
+              className="rounded-2xl p-6 text-white shadow-lg"
             >
-              <div
-                className={`
-                  rounded-2xl
-                  p-6
-                  bg-gradient-to-r
-                  ${item.color}
-                  `}
-              >
+              <div className={`rounded-2xl bg-gradient-to-r p-6 ${item.color}`}>
                 <Icon size={35} />
 
-                <h2
-                  className="
-                    mt-5
-                    text-3xl
-                    font-bold
-                    "
-                >
-                  {item.value}
-                </h2>
+                <h2 className="mt-5 text-3xl font-bold">{item.value}</h2>
 
-                <p
-                  className="
-                    mt-2
-                    opacity-90
-                    "
-                >
-                  {item.title}
-                </p>
+                <p className="mt-2 opacity-90">{item.title}</p>
               </div>
             </motion.div>
           );
@@ -198,7 +107,6 @@ export default function UserOverviewPage() {
       </div>
 
       {/* Chart */}
-
       <motion.div
         initial={{
           opacity: 0,
@@ -208,31 +116,13 @@ export default function UserOverviewPage() {
           opacity: 1,
           scale: 1,
         }}
-        className="
-        bg-white
-        dark:bg-gray-900
-        rounded-2xl
-        shadow
-        p-6
-        "
+        className="rounded-2xl bg-white p-6 shadow dark:bg-gray-900"
       >
-        <h2
-          className="
-          text-xl
-          font-semibold
-          mb-6
-          "
-        >
-          Reading Activity
-        </h2>
+        <h2 className="mb-6 text-xl font-semibold">Reading Activity</h2>
 
-        <div
-          className="
-          h-[350px]
-          "
-        >
+        <div className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
+            <BarChart data={overview.chartData || []}>
               <CartesianGrid strokeDasharray="3 3" />
 
               <XAxis dataKey="month" />
@@ -241,7 +131,7 @@ export default function UserOverviewPage() {
 
               <Tooltip />
 
-              <Bar dataKey="books" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="books" fill="#6366F1" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

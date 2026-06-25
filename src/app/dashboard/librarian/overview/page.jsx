@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, DollarSign, Truck } from "lucide-react";
-
 import {
   BarChart,
   Bar,
@@ -13,221 +13,82 @@ import {
 } from "recharts";
 
 export default function LibrarianOverviewPage() {
-  // Later replace with API data
+  const [overview, setOverview] = useState({});
+
+  // TEMPORARY TEST
+  const librarianEmail = "lib@gmail.com";
+
+  useEffect(() => {
+    fetch(`http://localhost:5000/librarian/overview/${librarianEmail}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setOverview(data);
+      })
+      .catch(console.error);
+  }, []);
+
   const stats = [
     {
       title: "Total Books Listed",
-      value: 120,
+      value: overview.totalBooksListed || 0,
       icon: BookOpen,
     },
-
     {
       title: "Total Earnings",
-      value: "$2450",
+      value: `$${overview.totalEarnings || 0}`,
       icon: DollarSign,
     },
-
     {
-      title: "Active Deliveries",
-      value: 18,
+      title: "Active Pending Requests",
+      value: overview.activePendingRequests || 0,
       icon: Truck,
-    },
-  ];
-
-  // Later replace from backend
-  const earningsData = [
-    {
-      month: "Jan",
-      earnings: 400,
-    },
-
-    {
-      month: "Feb",
-      earnings: 700,
-    },
-
-    {
-      month: "Mar",
-      earnings: 550,
-    },
-
-    {
-      month: "Apr",
-      earnings: 900,
-    },
-
-    {
-      month: "May",
-      earnings: 1200,
     },
   ];
 
   return (
     <div className="p-5 md:p-8">
-      {/* Header */}
+      <h1 className="mb-8 text-3xl font-bold">Librarian Overview</h1>
 
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 20,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        className="mb-8"
-      >
-        <h1
-          className="
-          text-3xl
-          font-bold
-          "
-        >
-          Librarian Overview
-        </h1>
-
-        <p
-          className="
-          text-gray-500
-          mt-2
-          "
-        >
-          Manage your books, earnings and deliveries
-        </p>
-      </motion.div>
-
-      {/* Stats */}
-
-      <div
-        className="
-        grid
-        grid-cols-1
-        sm:grid-cols-2
-        lg:grid-cols-3
-        gap-6
-        "
-      >
-        {stats.map((item, index) => {
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {stats.map((item) => {
           const Icon = item.icon;
 
           return (
-            <motion.div
+            <div
               key={item.title}
-              initial={{
-                opacity: 0,
-                y: 30,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                delay: index * 0.1,
-              }}
-              className="
-              rounded-3xl
-              border
-              bg-white
-              p-6
-              shadow-sm
-              hover:shadow-xl
-              transition
-              "
+              className="rounded-3xl border bg-white p-6 shadow-sm"
             >
-              <div
-                className="
-                  flex
-                  justify-between
-                  items-center
-                  "
-              >
+              <div className="flex items-center justify-between">
                 <div>
-                  <p
-                    className="
-                      text-gray-500
-                      text-sm
-                      "
-                  >
-                    {item.title}
-                  </p>
+                  <p className="text-sm text-gray-500">{item.title}</p>
 
-                  <h2
-                    className="
-                      text-3xl
-                      font-bold
-                      mt-2
-                      "
-                  >
-                    {item.value}
-                  </h2>
+                  <h2 className="mt-2 text-3xl font-bold">{item.value}</h2>
                 </div>
 
-                <div
-                  className="
-                    p-4
-                    rounded-full
-                    bg-indigo-100
-                    "
-                >
+                <div className="rounded-full bg-indigo-100 p-4">
                   <Icon size={28} className="text-indigo-600" />
                 </div>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>
 
-      {/* Chart */}
+      <div className="mt-10 rounded-3xl border bg-white p-6">
+        <h2 className="mb-6 text-xl font-bold">Earnings Overview</h2>
 
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 30,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          delay: 0.3,
-        }}
-        className="
-      mt-10
-      rounded-3xl
-      border
-      bg-white
-      p-6
-      "
-      >
-        <h2
-          className="
-          text-xl
-          font-bold
-          mb-6
-          "
-        >
-          Earnings Overview
-        </h2>
-
-        <div
-          className="
-          h-[350px]
-          w-full
-          "
-        >
+        <div className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={earningsData}>
-              <XAxis dataKey="month" />
-
+            <BarChart data={overview.chartData || []}>
+              <XAxis dataKey="title" />
               <YAxis />
-
               <Tooltip />
-
-              <Bar dataKey="earnings" />
+              <Bar dataKey="requests" />
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
