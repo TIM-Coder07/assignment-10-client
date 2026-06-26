@@ -61,12 +61,17 @@ export default function DashboardSidebar() {
     admin: [
       {
         name: "Admin Overview",
-        path: "/dashboard/admin",
+        path: "/dashboard/admin/overview",
+      },
+
+      {
+        name: "Book Approval",
+        path: "/dashboard/admin/book-approval",
       },
 
       {
         name: "Manage Users",
-        path: "/dashboard/admin/users",
+        path: "/dashboard/admin/manage-users",
       },
     ],
   };

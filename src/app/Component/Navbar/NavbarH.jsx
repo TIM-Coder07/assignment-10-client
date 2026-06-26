@@ -24,7 +24,7 @@ const NavbarH = () => {
 
     librarian: "/dashboard/librarian/overview",
 
-    admin: "/dashboard/admin",
+    admin: "/dashboard/admin/overview",
   };
 
   const roleNames = {
