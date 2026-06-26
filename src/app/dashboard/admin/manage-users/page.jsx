@@ -1,11 +1,8 @@
-import React from 'react';
+import { getAllUsers } from "@/lib/AdminAPI's/fetchAPI";
+import AdminManageUser from "./AdminManageUser";
 
-const AdminManageUser = () => {
-    return (
-        <div>
-            
-        </div>
-    );
-};
+export default async function Page() {
+  const initialUsers = await getAllUsers();
 
-export default AdminManageUser;
+  return <AdminManageUser initialUsers={initialUsers} />;
+}

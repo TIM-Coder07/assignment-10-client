@@ -12,26 +12,22 @@ const NavbarH = () => {
   const [open, setOpen] = useState(false);
 
   const pathname = usePathname();
-
   const router = useRouter();
 
   const { data: session, isPending } = authClient.useSession();
 
-  const userRole = session?.user?.role;
+  // ✅ Convert role to lowercase
+  const userRole = session?.user?.role?.toLowerCase();
 
   const dashboardRoutes = {
     user: "/dashboard/user/overview",
-
     librarian: "/dashboard/librarian/overview",
-
     admin: "/dashboard/admin/overview",
   };
 
   const roleNames = {
     user: "User",
-
     librarian: "Librarian",
-
     admin: "Admin",
   };
 
@@ -40,7 +36,6 @@ const NavbarH = () => {
       name: "Home",
       href: "/",
     },
-
     {
       name: "Browse Books",
       href: "/browseBook",
@@ -53,7 +48,7 @@ const NavbarH = () => {
     if (route) {
       router.push(route);
     } else {
-      console.log("Role not found");
+      console.log("Role not found:", userRole);
     }
   };
 
@@ -67,56 +62,19 @@ const NavbarH = () => {
     setOpen(false);
 
     router.refresh();
-
     router.push("/login");
   };
 
   return (
-    <nav
-      className="
-sticky
-top-0
-z-50
-border-b
-bg-white/70
-backdrop-blur-xl
-"
-    >
-      <div
-        className="
-max-w-7xl
-mx-auto
-px-5
-py-3
-flex
-justify-between
-items-center
-"
-      >
-        {/* LOGO */}
-
+    <nav className="sticky top-0 z-50 border-b bg-white/70 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-5 py-3 flex justify-between items-center">
+        {/* Logo */}
         <Link href="/">
-          <h1
-            className="
-text-2xl
-font-bold
-text-purple-600
-"
-          >
-            BookNest
-          </h1>
+          <h1 className="text-2xl font-bold text-purple-600">BookNest</h1>
         </Link>
 
-        {/* DESKTOP MENU */}
-
-        <div
-          className="
-hidden
-md:flex
-gap-7
-items-center
-"
-        >
+        {/* Desktop Menu */}
+        <div className="hidden md:flex gap-7 items-center">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -129,45 +87,22 @@ items-center
             </Link>
           ))}
 
-          {/* DASHBOARD */}
-
           {session?.user && !isPending && (
             <button
               onClick={goDashboard}
-              className="
-font-medium
-hover:text-purple-600
-"
+              className="font-medium hover:text-purple-600"
             >
               Dashboard
             </button>
           )}
         </div>
 
-        {/* RIGHT */}
-
-        <div
-          className="
-hidden
-md:flex
-items-center
-gap-4
-"
-        >
+        {/* Right */}
+        <div className="hidden md:flex items-center gap-4">
           {session?.user ? (
             <>
-              <div
-                className="
-px-3
-py-1
-rounded-full
-bg-purple-100
-text-purple-700
-text-sm
-font-semibold
-"
-              >
-                Role: {roleNames[userRole] || "Loading..."}
+              <div className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-sm font-semibold">
+                Role: {roleNames[userRole] || userRole}
               </div>
 
               <ProfileMenu handleLogout={handleLogout} />
@@ -178,13 +113,7 @@ font-semibold
 
               <Link
                 href="/registration"
-                className="
-px-5
-py-2
-rounded-full
-bg-purple-600
-text-white
-"
+                className="px-5 py-2 rounded-full bg-purple-600 text-white"
               >
                 Sign Up
               </Link>
@@ -192,32 +121,15 @@ text-white
           )}
         </div>
 
-        {/* MOBILE BUTTON */}
-
-        <button
-          onClick={() => setOpen(!open)}
-          className="
-md:hidden
-text-3xl
-"
-        >
+        {/* Mobile Button */}
+        <button onClick={() => setOpen(!open)} className="md:hidden text-3xl">
           {open ? <HiX /> : <HiMenuAlt3 />}
         </button>
       </div>
 
-      {/* MOBILE MENU */}
-
+      {/* Mobile Menu */}
       {open && (
-        <div
-          className="
-md:hidden
-px-6
-pb-5
-flex
-flex-col
-gap-4
-"
-        >
+        <div className="md:hidden px-6 pb-5 flex flex-col gap-4">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -230,34 +142,18 @@ gap-4
 
           {session?.user && (
             <>
-              <p
-                className="
-text-purple-600
-font-semibold
-"
-              >
-                Role: {roleNames[userRole]}
+              <p className="text-purple-600 font-semibold">
+                Role: {roleNames[userRole] || userRole}
               </p>
 
-              <button
-                onClick={goDashboard}
-                className="
-text-left
-"
-              >
+              <button onClick={goDashboard} className="text-left">
                 Dashboard
               </button>
             </>
           )}
 
           {session?.user ? (
-            <button
-              onClick={handleLogout}
-              className="
-text-red-500
-text-left
-"
-            >
+            <button onClick={handleLogout} className="text-red-500 text-left">
               Logout
             </button>
           ) : (

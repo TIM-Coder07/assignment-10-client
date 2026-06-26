@@ -70,3 +70,53 @@ export const deleteBook = async (id) => {
 
   return await res.json();
 };
+
+
+// ==============================
+// Get All Users
+// ==============================
+export async function getAllUsers() {
+  const res = await fetch(`${API_URL}/admin/users`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch users");
+  }
+
+  return res.json();
+}
+
+// ==============================
+// Change User Role
+// ==============================
+export async function updateUserRole(id, role) {
+  const res = await fetch(`${API_URL}/admin/users/${id}/role`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ role }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to update role");
+  }
+
+  return res.json();
+}
+
+// ==============================
+// Delete User
+// ==============================
+export async function deleteUser(id) {
+  const res = await fetch(`${API_URL}/admin/users/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete user");
+  }
+
+  return res.json();
+}
