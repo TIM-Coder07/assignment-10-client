@@ -52,7 +52,7 @@ const ProfileMenu = ({ handleLogout }) => {
 
         <Dropdown.Menu>
           <Dropdown.Item id="profile">
-            <Link href={'/profile'}>
+            <Link href={'/dashboard/profile'}>
             <Label>Profile</Label>
             </Link>
           </Dropdown.Item>

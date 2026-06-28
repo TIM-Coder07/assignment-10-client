@@ -6,9 +6,11 @@ import { Button, Drawer } from "@heroui/react";
 import { HiMenuAlt3 } from "react-icons/hi";
 
 import { authClient } from "@/lib/auth-client";
+import { usePathname } from "next/navigation";
 
 export default function DashboardSidebar() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   const { data: session, isPending } = authClient.useSession();
 
@@ -73,6 +75,14 @@ export default function DashboardSidebar() {
         name: "Manage Users",
         path: "/dashboard/admin/manage-users",
       },
+      {
+        name: "All Books",
+        path: "/dashboard/admin/manage-all-books",
+      },
+      {
+        name: "All Transactions",
+        path: "/dashboard/admin/transactions",
+      },
     ],
   };
 
@@ -99,16 +109,29 @@ export default function DashboardSidebar() {
           Role: {roleNames[role] || "Unknown"}
         </p>
 
-        <nav className="flex flex-col gap-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              href={item.path}
-              className="rounded-lg px-3 py-2 hover:bg-gray-800 transition"
-            >
-              {item.name}
-            </Link>
-          ))}
+        <nav className="flex flex-col gap-2">
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.path || pathname.startsWith(item.path + "/");
+
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`group relative flex items-center justify-between overflow-hidden rounded-xl px-4 py-3 font-medium transition-all duration-300 ${
+                  isActive
+                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/30"
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+              >
+                <span>{item.name}</span>
+
+                {isActive && (
+                  <span className="h-2.5 w-2.5 rounded-full bg-yellow-300"></span>
+                )}
+              </Link>
+            );
+          })}
         </nav>
       </aside>
 
@@ -128,16 +151,27 @@ export default function DashboardSidebar() {
                   Role: {roleNames[role] || "Unknown"}
                 </p>
 
-                <nav className="flex flex-col gap-4">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.path}
-                      href={item.path}
-                      onClick={() => setOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
+                <nav className="flex flex-col gap-2">
+                  {navItems.map((item) => {
+                    const isActive =
+                      pathname === item.path ||
+                      pathname.startsWith(item.path + "/");
+
+                    return (
+                      <Link
+                        key={item.path}
+                        href={item.path}
+                        onClick={() => setOpen(false)}
+                        className={`rounded-xl px-4 py-3 transition-all duration-300 ${
+                          isActive
+                            ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
                 </nav>
               </Drawer.Body>
             </Drawer.Dialog>

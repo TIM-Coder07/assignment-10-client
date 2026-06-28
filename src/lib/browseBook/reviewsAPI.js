@@ -19,21 +19,31 @@ export const createReview = async (reviewData) => {
   return data;
 };
 
-// Get Reviews By Book
+// Get Book Reviews
 export const getBookReviews = async (bookId) => {
   const res = await fetch(`${API_URL}/reviews/${bookId}`);
 
-  return await res.json();
+  if (!res.ok) {
+    throw new Error("Failed to fetch reviews");
+  }
+
+  return res.json();
 };
 
 // Get My Reviews
 export const getMyReviews = async (email) => {
   const res = await fetch(`${API_URL}/my-reviews/${email}`);
 
-  return await res.json();
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to fetch reviews");
+  }
+
+  return data;
 };
 
-// Edit Review
+// Update Review
 export const updateReview = async (id, reviewData) => {
   const res = await fetch(`${API_URL}/reviews/${id}`, {
     method: "PATCH",
@@ -43,14 +53,32 @@ export const updateReview = async (id, reviewData) => {
     body: JSON.stringify(reviewData),
   });
 
-  return await res.json();
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to update review");
+  }
+
+  return data;
 };
 
 // Delete Review
-export const deleteReview = async (id) => {
+export const deleteReview = async (id, userEmail) => {
   const res = await fetch(`${API_URL}/reviews/${id}`, {
     method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userEmail,
+    }),
   });
 
-  return await res.json();
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to delete review");
+  }
+
+  return data;
 };

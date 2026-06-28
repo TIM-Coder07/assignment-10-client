@@ -11,3 +11,15 @@ export const getBrowseBookDetailsApi = async (id) => {
   return response.json();
 
 };
+
+// GET FEATURED (6 BOOKS)
+export const getFeaturedBooksApi = async () => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/books?limit=6`,
+    {
+      cache: "no-store",
+    }
+  );
+
+  return response.json();
+};

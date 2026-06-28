@@ -120,3 +120,64 @@ export async function deleteUser(id) {
 
   return res.json();
 }
+
+// ==============================
+// GET ALL BOOKS (ADMIN)
+// ==============================
+export async function getAllBooks() {
+  const res = await fetch(`${API_URL}/admin/books`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch books");
+  }
+
+  return res.json();
+}
+
+// ==============================
+// UNPUBLISH BOOK (ADMIN)
+// ==============================
+export async function unpublishBook(id) {
+  const res = await fetch(`${API_URL}/admin/books/${id}/unpublish`, {
+    method: "PATCH",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to unpublish book");
+  }
+
+  return res.json();
+}
+
+// ==============================
+// PUBLISH BOOK (ADMIN)
+// ==============================
+export async function publishBook(id) {
+  const res = await fetch(`${API_URL}/admin/books/${id}/publish`, {
+    method: "PATCH",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to publish book");
+  }
+
+  return res.json();
+}
+
+
+// ==============================
+// GET ALL TRANSACTIONS
+// ==============================
+export async function getAllTransactions() {
+  const res = await fetch(`${API_URL}/admin/transactions`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch transactions");
+  }
+
+  return res.json();
+}

@@ -1,12 +1,23 @@
-import React from 'react';
-import Hero from './Component/ui/HeroBanner';
+import Hero from "./Component/ui/HeroBanner";
+import BannerSlider from "./Component/ui/BannerSlider";
+import FeturedBooks from "./Component/ui/FeturedBooks";
 
-const page = () => {
+export default function Page() {
   return (
     <main>
-      <Hero></Hero>
+      <section>
+        <Hero />
+      </section>
+
+      <section className="mt-10">
+        <div className="mt-10 max-w-7xl mx-auto px-4">
+          <BannerSlider />
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <FeturedBooks></FeturedBooks>
+      </section>
     </main>
   );
-};
-
-export default page;
+}
