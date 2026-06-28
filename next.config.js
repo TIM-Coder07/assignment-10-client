@@ -12,10 +12,6 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "ibb.co",
-      },
-      {
-        protocol: "https",
         hostname: "covers.openlibrary.org",
       },
     ],
