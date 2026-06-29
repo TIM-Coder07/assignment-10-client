@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { getFeaturedBooksApi } from "@/lib/browseBook/browseBookAPI";
 import BookCard from "./BookCard";
 import { useEffect, useState } from "react";
+import { authClient, useSession } from "@/lib/auth-client";
 
 const FeaturedBooks = () => {
   const [books, setBooks] = useState([]);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const loadBooks = async () => {

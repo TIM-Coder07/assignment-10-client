@@ -14,12 +14,14 @@ export default async function BrowseBookDetailsPage({ params }) {
   const tokenData = await auth.api.getToken({
     headers: await headers(),
   });
+  console.log('tokenData', tokenData);
 
   const token = tokenData?.token;
 
   const { browseBookId } = await params;
 
   const result = await getBrowseBookDetailsApi(browseBookId, token);
+  console.log(result);
 
   if (!result.success) {
     return <div className="p-10 text-center text-xl">Book not found</div>;

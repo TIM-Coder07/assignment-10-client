@@ -1,6 +1,5 @@
-
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
-console.log('API_URL',API_URL);
+console.log("API_URL", API_URL);
 
 // GET SINGLE BOOK
 export const getBrowseBookDetailsApi = async (id, token) => {
@@ -16,12 +15,9 @@ export const getBrowseBookDetailsApi = async (id, token) => {
 
 // GET FEATURED (6 BOOKS)
 export const getFeaturedBooksApi = async () => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/books?limit=6`,
-    {
-      cache: "no-store",
-    },
-  );
+  const response = await fetch(`${API_URL}/books?limit=6`, {
+    cache: "no-store",
+  });
 
   return response.json();
 };
