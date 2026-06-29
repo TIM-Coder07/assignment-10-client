@@ -6,6 +6,7 @@ export const createReview = async (reviewData) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(reviewData),
   });
@@ -63,8 +64,8 @@ export const updateReview = async (id, reviewData) => {
 };
 
 // Delete Review
-export const deleteReview = async (id, userEmail) => {
-  const res = await fetch(`${API_URL}/reviews/${id}`, {
+export const deleteMyReview = async ({ id, userEmail }) => {
+  const response = await fetch(`${API_URL}/reviews/${id}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -74,10 +75,10 @@ export const deleteReview = async (id, userEmail) => {
     }),
   });
 
-  const data = await res.json();
+  const data = await response.json();
 
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to delete review");
+  if (!response.ok) {
+    throw new Error(data.message);
   }
 
   return data;

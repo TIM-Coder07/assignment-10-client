@@ -3,7 +3,6 @@ import DeliveryButton from "@/app/Component/ui/DeliveryButton";
 import ReviewForm from "@/app/Component/ui/ReviewsForm";
 import { auth } from "@/lib/auth";
 import { getBrowseBookDetailsApi } from "@/lib/browseBook/browseBookAPI";
-
 import { Button } from "@heroui/react";
 
 import { BookOpen, Heart } from "lucide-react";
@@ -12,9 +11,15 @@ import { headers } from "next/headers";
 export const dynamic = "force-dynamic";
 
 export default async function BrowseBookDetailsPage({ params }) {
+  const tokenData = await auth.api.getToken({
+    headers: await headers(),
+  });
+
+  const token = tokenData?.token;
+
   const { browseBookId } = await params;
 
-  const result = await getBrowseBookDetailsApi(browseBookId);
+  const result = await getBrowseBookDetailsApi(browseBookId, token);
 
   if (!result.success) {
     return <div className="p-10 text-center text-xl">Book not found</div>;

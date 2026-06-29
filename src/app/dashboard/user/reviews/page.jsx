@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Star, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
-import { getMyReviews } from "@/lib/browseBook/reviewsAPI";
+import { deleteMyReview, getMyReviews } from "@/lib/browseBook/reviewsAPI";
 
 const MyReviewPage = () => {
   const [reviews, setReviews] = useState([]);
@@ -30,20 +30,22 @@ const MyReviewPage = () => {
 
   const handleDelete = async (id) => {
     const confirmDelete = confirm(
-      "Are you sure you want to delete this review?"
+      "Are you sure you want to delete this review?",
     );
 
     if (!confirmDelete) return;
 
     try {
-      await deleteMyReview({
+      const result = await deleteMyReview({
         id,
         userEmail: user.email,
       });
 
-      setReviews((prev) => prev.filter((review) => review._id !== id));
+      if (result.success) {
+        setReviews((prev) => prev.filter((review) => review._id !== id));
 
-      toast.success("Review deleted successfully");
+        toast.success(result.message);
+      }
     } catch (error) {
       toast.error(error.message);
     }
@@ -63,9 +65,7 @@ const MyReviewPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-5">
-      <h1 className="text-4xl font-bold mb-8">
-        My Reviews
-      </h1>
+      <h1 className="text-4xl font-bold mb-8">My Reviews</h1>
 
       <div className="grid gap-6">
         {reviews.map((review) => (
@@ -75,9 +75,7 @@ const MyReviewPage = () => {
           >
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="font-bold text-xl">
-                  {review.bookTitle}
-                </h2>
+                <h2 className="font-bold text-xl">{review.bookTitle}</h2>
 
                 <div className="flex mt-2">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -93,9 +91,7 @@ const MyReviewPage = () => {
                   ))}
                 </div>
 
-                <p className="mt-4">
-                  {review.comment}
-                </p>
+                <p className="mt-4">{review.comment}</p>
 
                 <p className="text-sm text-gray-500 mt-3">
                   {new Date(review.createdAt).toLocaleDateString()}
@@ -103,13 +99,9 @@ const MyReviewPage = () => {
               </div>
 
               <div className="flex gap-3">
-                <button className="btn btn-warning btn-sm">
-                  <Pencil size={18} />
-                </button>
-
                 <button
                   onClick={() => handleDelete(review._id)}
-                  className="btn btn-error btn-sm"
+                  className="btn btn-error btn-sm cursor-pointer"
                 >
                   <Trash2 size={18} />
                 </button>

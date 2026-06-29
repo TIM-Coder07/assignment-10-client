@@ -6,18 +6,19 @@ import toast from "react-hot-toast";
 import {
   getBookReviews,
   updateReview,
-  deleteReview,
+  deleteMyReview,
 } from "@/lib/browseBook/reviewsAPI";
+
 const ShowComments = ({ bookId, user }) => {
   const [reviews, setReviews] = useState([]);
-
   const [editingId, setEditingId] = useState(null);
   const [editComment, setEditComment] = useState("");
   const [editRating, setEditRating] = useState(5);
 
   useEffect(() => {
-    if (!bookId) return;
-    loadReviews();
+    if (bookId) {
+      loadReviews();
+    }
   }, [bookId]);
 
   const loadReviews = async () => {
@@ -36,40 +37,46 @@ const ShowComments = ({ bookId, user }) => {
     setEditRating(review.rating);
   };
 
-  const handleSave = async (id) => {
-    if (!editComment.trim()) {
-      return toast.error("Comment is required");
-      setEditingId(null);
-      setEditComment("");
-      setEditRating(5);
-    }
-
-    try {
-      await updateReview(id, {
-        rating: editRating,
-        comment: editComment,
-        userEmail: user.email,
-      });
-
-      toast.success("Review updated successfully");
-
-      setReviews((prev) =>
-        prev.map((review) =>
-          review._id === id
-            ? {
-                ...review,
-                rating: editRating,
-                comment: editComment,
-              }
-            : review,
-        ),
-      );
-
-      setEditingId(null);
-    } catch (err) {
-      toast.error(err.message || "Update failed");
-    }
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditComment("");
+    setEditRating(5);
   };
+
+  const handleSave = async (id) => {
+  if (!editComment.trim()) {
+    toast.error("Comment is required");
+    return;
+  }
+
+  try {
+    await updateReview(id, {
+      rating: editRating,
+      comment: editComment,
+      userEmail: user.email,
+    });
+
+    toast.success("Review updated successfully");
+
+    setReviews((prev) =>
+      prev.map((review) =>
+        review._id === id
+          ? {
+              ...review,
+              rating: editRating,
+              comment: editComment,
+            }
+          : review
+      )
+    );
+
+    setEditingId(null);
+    setEditComment("");
+    setEditRating(5);
+  } catch (err) {
+    toast.error(err.message || "Update failed");
+  }
+};
 
   const handleDelete = async (id) => {
     const confirmDelete = confirm(
@@ -79,7 +86,10 @@ const ShowComments = ({ bookId, user }) => {
     if (!confirmDelete) return;
 
     try {
-      await deleteReview(id, user.email);
+      await deleteMyReview({
+        id,
+        userEmail: user.email,
+      });
 
       toast.success("Review deleted");
 
@@ -90,41 +100,45 @@ const ShowComments = ({ bookId, user }) => {
   };
 
   return (
-    <div className="space-y-5 mt-8">
+    <div className="mt-8 space-y-5">
       <h2 className="text-2xl font-bold">Reader Reviews ({reviews.length})</h2>
 
       {reviews.length === 0 ? (
-        <div className="text-center py-10 text-gray-500">No reviews yet.</div>
+        <div className="py-10 text-center text-gray-500">No reviews yet.</div>
       ) : (
         reviews.map((review) => (
           <div
             key={review._id}
-            className="bg-base-100 border rounded-2xl p-5 shadow"
+            className="rounded-2xl border bg-base-100 p-5 shadow"
           >
-            <div className="flex justify-between items-start">
+            <div className="flex items-start justify-between">
               <div className="flex gap-4">
                 <img
                   src={review.userPhoto || "/avatar.png"}
                   alt={review.userName}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="h-12 w-12 rounded-full object-cover"
                 />
 
                 <div>
-                  <h3 className="font-semibold text-lg">{review.userName}</h3>
+                  <h3 className="text-lg font-semibold">{review.userName}</h3>
 
                   {editingId === review._id ? (
-                    <div className="flex mt-1 gap-1">
-                      {Array.from({ length: review.rating }).map((_, index) => (
-                        <Star
-                          key={index}
-                          size={18}
-                          className="fill-yellow-400 text-yellow-400"
-                        />
+                    <select
+                      value={editRating}
+                      onChange={(e) => setEditRating(Number(e.target.value))}
+                      className="select select-bordered mt-2"
+                    >
+                      {[1, 2, 3, 4, 5].map((num) => (
+                        <option key={num} value={num}>
+                          {num} Star
+                        </option>
                       ))}
-                    </div>
+                    </select>
                   ) : (
-                    <div className="flex mt-1 gap-1">
-                      {Array.from({ length: review.rating }).map((_, index) => (
+                    <div className="mt-1 flex gap-1">
+                      {Array.from({
+                        length: review.rating,
+                      }).map((_, index) => (
                         <Star
                           key={index}
                           size={18}
@@ -144,15 +158,15 @@ const ShowComments = ({ bookId, user }) => {
                 {user?.email === review.userEmail && (
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleEdit(review)}
                       className="btn btn-warning btn-sm"
+                      onClick={() => handleEdit(review)}
                     >
                       <Pencil size={16} />
                     </button>
 
                     <button
-                      onClick={() => handleDelete(review._id)}
                       className="btn btn-error btn-sm"
+                      onClick={() => handleDelete(review._id)}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -164,34 +178,27 @@ const ShowComments = ({ bookId, user }) => {
             {editingId === review._id ? (
               <div className="mt-5 space-y-4">
                 <textarea
+                  rows={4}
                   value={editComment}
                   onChange={(e) => setEditComment(e.target.value)}
-                  rows={4}
                   className="textarea textarea-bordered w-full"
                 />
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => handleSave(review._id)}
                     className="btn btn-primary"
+                    onClick={() => handleSave(review._id)}
                   >
                     Save
                   </button>
 
-                  <button
-                    onClick={() => {
-                      setEditingId(null);
-                      setEditComment("");
-                      setEditRating(5);
-                    }}
-                    className="btn btn-outline"
-                  >
+                  <button className="btn btn-outline" onClick={handleCancel}>
                     Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="mt-4 text-base-content/80 leading-7">
+              <p className="mt-4 leading-7 text-base-content/80">
                 {review.comment}
               </p>
             )}
