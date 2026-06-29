@@ -43,8 +43,6 @@ export default function DeliveryButton({ book }) {
         requestedAt: new Date(),
       };
 
-      console.log("deliveryData", deliveryData);
-
       const result = await createDeliveryRequest(deliveryData);
 
       if (result.success) {

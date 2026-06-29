@@ -141,7 +141,7 @@ export default function Hero() {
           "
           >
             <Link
-              href="/browse-books"
+              href="/browseBook"
               className="
           flex
           items-center
