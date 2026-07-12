@@ -3,10 +3,17 @@ export const dynamic = "force-dynamic";
 import { Eye } from "lucide-react";
 import { getBooksApi } from "@/lib/librarian/API";
 import Link from "next/link";
+import BookFilters from "../Component/ui/BookFilters";
 
-export default async function BrowseBookPage() {
-  const books = await getBooksApi();
+export default async function BrowseBookPage({ searchParams }) {
+  const params = await searchParams;
 
+  const search = params.search || "";
+  const category = params.category || "";
+  const availability = params.availability || "";
+  const deliveryFee = params.deliveryFee || "";
+
+  const books = await getBooksApi({ search, category, availability, deliveryFee });
   const publishedBooks = books.filter((book) => book.status === "Published");
 
   return (
@@ -45,6 +52,15 @@ export default async function BrowseBookPage() {
             Explore all published books
           </p>
         </div>
+
+        {/* Filter  */}
+        <BookFilters
+          className="my-6"
+          search={search}
+          category={category}
+          availability={availability}
+          deliveryFee={deliveryFee}
+        />
 
         {/* Empty State */}
 

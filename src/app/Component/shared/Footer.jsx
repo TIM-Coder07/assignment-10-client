@@ -114,7 +114,7 @@ const Footer = () => {
 
       {/* Bottom */}
       <div className="border-t border-slate-800 py-5 text-center text-sm text-gray-400">
-        © {new Date().getFullYear()} BookVerse. All Rights Reserved.
+        © {new Date().getFullYear()} BookVerse. All Rights Reserved by TAJ.
       </div>
     </footer>
   );
