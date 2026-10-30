@@ -39,13 +39,33 @@ export default function SignupPage() {
 
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleGoogleSignup = async () => {
-    await authClient.signIn.social({
-      provider: "google",
 
-      callbackURL: "/",
+const handleGoogleSignup = async () => {
+  try {
+    setIsCreating(true);
+
+    const { data, error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: redirectTo,
+      errorCallbackURL: "/registration",
     });
-  };
+
+    if (error) {
+      console.error("Google Signup Error:", error);
+      toast.error(error.message || "Google signup failed");
+      setIsCreating(false);
+      return;
+    }
+
+    console.log("Google Signup Response:", data);
+
+  } catch (error) {
+    console.error("Google Signup Failed:", error);
+    toast.error("Unable to connect to authentication server");
+    setIsCreating(false);
+  }
+};
+
 
   const onSubmit = async (e) => {
     e.preventDefault();
