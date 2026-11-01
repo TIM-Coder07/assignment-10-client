@@ -1,20 +1,41 @@
+
 "use client";
 
 import {
   Button,
-  Description,
   Label,
   SearchField,
   Select,
   ListBox,
 } from "@heroui/react";
-import { useRouter, useSearchParams } from "next/navigation";
 
-const categories = ["Novel", "Science", "History", "Programming", "Biography"];
+import {
+  useRouter,
+  useSearchParams,
+  usePathname,
+} from "next/navigation";
 
-const availabilityOptions = ["All", "Available", "Unavailable"];
+const categories = [
+  "Novel",
+  "Science",
+  "History",
+  "Programming",
+  "Biography",
+];
 
-const deliveryFeeOptions = ["All", "Free", "0-50", "51-100", "100+"];
+const availabilityOptions = [
+  "All",
+  "Available",
+  "Unavailable",
+];
+
+const deliveryFeeOptions = [
+  "All",
+  "Free",
+  "0-50",
+  "51-100",
+  "100+",
+];
 
 export default function BookFilters({
   search = "",
@@ -23,87 +44,115 @@ export default function BookFilters({
   deliveryFee = "",
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Update URL without removing other active filters
   const updateFilter = (key, value) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (!value || value === "All") {
+    if (
+      value === null ||
+      value === undefined ||
+      value === "" ||
+      value === "All"
+    ) {
       params.delete(key);
     } else {
-      params.set(key, value);
+      params.set(key, String(value));
     }
 
-    router.push(`/browseBook?${params.toString()}`);
+    const queryString = params.toString();
+
+    router.push(
+      queryString ? `${pathname}?${queryString}` : pathname,
+      { scroll: false }
+    );
   };
 
+  // Clear all filters
   const clearFilters = () => {
-    router.push("/browseBook");
+    router.push(pathname, { scroll: false });
   };
+
+  const fieldClassName = "w-full lg:flex-1";
+
+  const triggerClassName = `
+    min-h-11
+    rounded-xl
+    border border-slate-200
+    bg-white
+    shadow-none
+    transition-all duration-200
+    hover:border-violet-300
+    focus-within:border-violet-500
+  `;
 
   return (
-    <div className="rounded-2xl border border-[#e0b7fe] bg-white p-6 shadow-sm">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+    <div className="w-full">
+
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+
         {/* Search */}
         <SearchField
+          key={search}
           defaultValue={search}
-          onSubmit={(value) => updateFilter("search", value)}
-          className="flex-1"
+          onSubmit={(value) => updateFilter("search", value.trim())}
+          onClear={() => updateFilter("search", "")}
+          className={fieldClassName}
         >
-          <Label className="font-medium text-gray-700">Search Books</Label>
+          <Label className="mb-2 block text-sm font-semibold text-slate-700">
+            Search Books
+          </Label>
 
           <SearchField.Group
-            className="
-              border
-              border-[#e0b7fe]
-              bg-[#fdf8ff]
-              transition-all
-              duration-200
-              focus-within:border-[#c76df3]
+            className={`
+              ${triggerClassName}
+              flex items-center gap-2
+              px-3
               focus-within:ring-2
-              focus-within:ring-[#e0b7fe]/40
-            "
+              focus-within:ring-violet-100
+            `}
           >
-            <SearchField.SearchIcon className="text-[#9c4dcc]" />
+            <SearchField.SearchIcon className="text-slate-400" />
 
             <SearchField.Input
-              className="placeholder:text-gray-400"
+              className="text-sm text-slate-800 placeholder:text-slate-400"
               placeholder="Search by title..."
             />
 
-            <SearchField.ClearButton className="text-[#9c4dcc]" />
+            <SearchField.ClearButton className="text-slate-400 hover:text-violet-600" />
           </SearchField.Group>
         </SearchField>
 
         {/* Category */}
         <Select
-          selectedKey={category}
-          onSelectionChange={(key) => updateFilter("category", key)}
-          className="w-full lg:w-56"
+          selectedKey={category || null}
+          onSelectionChange={(key) =>
+            updateFilter("category", key)
+          }
+          className={fieldClassName}
         >
-          <Label className="font-medium text-gray-700">Category</Label>
+          <Label className="mb-2 block text-sm font-semibold text-slate-700">
+            Category
+          </Label>
 
-          <Select.Trigger
-            className="
-              border
-              border-[#e0b7fe]
-              bg-[#fdf8ff]
-              transition-all
-              duration-200
-              hover:border-[#d39df8]
-              data-[focus=true]:border-[#c76df3]
-              data-[focus=true]:ring-2
-              data-[focus=true]:ring-[#e0b7fe]/40
-            "
-          >
-            <Select.Value placeholder="Category" />
-            <Select.Indicator className="text-[#9c4dcc]" />
+          <Select.Trigger className={triggerClassName}>
+            <Select.Value
+              className="text-sm text-slate-700"
+              placeholder="All Categories"
+            />
+            <Select.Indicator className="text-slate-400" />
           </Select.Trigger>
 
           <Select.Popover>
             <ListBox>
               {categories.map((item) => (
-                <ListBox.Item key={item}>
+                <ListBox.Item
+                  key={item}
+                  id={item}
+                  textValue={item}
+                >
                   <Label>{item}</Label>
                 </ListBox.Item>
               ))}
@@ -113,35 +162,32 @@ export default function BookFilters({
 
         {/* Availability */}
         <Select
-          selectedKey={availability}
-          onSelectionChange={(key) => {
-            console.log(key);
-          }}
-          className="w-full lg:w-56"
+          selectedKey={availability || null}
+          onSelectionChange={(key) =>
+            updateFilter("availability", key)
+          }
+          className={fieldClassName}
         >
-          <Label className="font-medium text-gray-700">Availability</Label>
+          <Label className="mb-2 block text-sm font-semibold text-slate-700">
+            Availability
+          </Label>
 
-          <Select.Trigger
-            className="
-              border
-              border-[#e0b7fe]
-              bg-[#fdf8ff]
-              transition-all
-              duration-200
-              hover:border-[#d39df8]
-              data-[focus=true]:border-[#c76df3]
-              data-[focus=true]:ring-2
-              data-[focus=true]:ring-[#e0b7fe]/40
-            "
-          >
-            <Select.Value placeholder="Availability" />
-            <Select.Indicator className="text-[#9c4dcc]" />
+          <Select.Trigger className={triggerClassName}>
+            <Select.Value
+              className="text-sm text-slate-700"
+              placeholder="All Availability"
+            />
+            <Select.Indicator className="text-slate-400" />
           </Select.Trigger>
 
           <Select.Popover>
             <ListBox>
               {availabilityOptions.map((item) => (
-                <ListBox.Item key={item}>
+                <ListBox.Item
+                  key={item}
+                  id={item}
+                  textValue={item}
+                >
                   <Label>{item}</Label>
                 </ListBox.Item>
               ))}
@@ -151,33 +197,32 @@ export default function BookFilters({
 
         {/* Delivery Fee */}
         <Select
-          selectedKey={deliveryFee}
-          onSelectionChange={(key) => updateFilter("deliveryFee", key)}
-          className="w-full lg:w-56"
+          selectedKey={deliveryFee || null}
+          onSelectionChange={(key) =>
+            updateFilter("deliveryFee", key)
+          }
+          className={fieldClassName}
         >
-          <Label className="font-medium text-gray-700">Delivery Fee</Label>
+          <Label className="mb-2 block text-sm font-semibold text-slate-700">
+            Delivery Fee
+          </Label>
 
-          <Select.Trigger
-            className="
-              border
-              border-[#e0b7fe]
-              bg-[#fdf8ff]
-              transition-all
-              duration-200
-              hover:border-[#d39df8]
-              data-[focus=true]:border-[#c76df3]
-              data-[focus=true]:ring-2
-              data-[focus=true]:ring-[#e0b7fe]/40
-            "
-          >
-            <Select.Value placeholder="Delivery Fee" />
-            <Select.Indicator className="text-[#9c4dcc]" />
+          <Select.Trigger className={triggerClassName}>
+            <Select.Value
+              className="text-sm text-slate-700"
+              placeholder="All Delivery Fees"
+            />
+            <Select.Indicator className="text-slate-400" />
           </Select.Trigger>
 
           <Select.Popover>
             <ListBox>
               {deliveryFeeOptions.map((item) => (
-                <ListBox.Item key={item}>
+                <ListBox.Item
+                  key={item}
+                  id={item}
+                  textValue={item}
+                >
                   <Label>{item}</Label>
                 </ListBox.Item>
               ))}
@@ -185,22 +230,35 @@ export default function BookFilters({
           </Select.Popover>
         </Select>
 
-        {/* Clear Filters */}
+      </div>
+
+      {/* Bottom Action */}
+      <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+
+        <p className="text-xs leading-5 text-slate-500">
+          Refine your search to find the right book for you.
+        </p>
+
         <Button
           onPress={clearFilters}
           className="
-            w-full
-            lg:w-auto
-            bg-[#e0b7fe]
-            text-[#5d2c86]
-            font-semibold
-            hover:bg-[#d6a4fb]
-            transition-all
-            duration-300
+            min-h-10
+            rounded-xl
+            border border-slate-200
+            bg-white
+            px-5
+            text-sm font-semibold
+            text-slate-600
+            shadow-none
+            transition-all duration-200
+            hover:border-violet-200
+            hover:bg-violet-50
+            hover:text-violet-700
           "
         >
           Clear Filters
         </Button>
+
       </div>
     </div>
   );
