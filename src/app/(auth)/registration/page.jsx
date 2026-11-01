@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -17,7 +18,6 @@ import {
 
 import {
   Button,
-  Description,
   FieldError,
   Form,
   Input,
@@ -33,7 +33,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { BsGoogle } from "react-icons/bs";
 
-export default function SignupPage() {
+function SignupPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -41,16 +41,19 @@ export default function SignupPage() {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [role, setRole] = useState("user");
   const [isCreating, setIsCreating] = useState(false);
 
-  // Google Signup
+  // GOOGLE SIGNUP
   const handleGoogleSignup = async () => {
     try {
       setIsCreating(true);
 
-      const { data, error } = await authClient.signIn.social({
+      const { error } = await authClient.signIn.social({
         provider: "google",
         callbackURL: redirectTo,
         errorCallbackURL: "/registration",
@@ -60,18 +63,16 @@ export default function SignupPage() {
         console.error("Google Signup Error:", error);
         toast.error(error.message || "Google signup failed");
         setIsCreating(false);
-        return;
       }
-
-      console.log("Google Signup Response:", data);
     } catch (error) {
       console.error("Google Signup Failed:", error);
+
       toast.error("Unable to connect to authentication server");
       setIsCreating(false);
     }
   };
 
-  // Email Signup
+  // EMAIL SIGNUP
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -81,22 +82,23 @@ export default function SignupPage() {
       const formData = new FormData(e.currentTarget);
       const data = Object.fromEntries(formData);
 
+      // PASSWORD MATCH
       if (data.password !== data.confirmPassword) {
         toast.error("Passwords do not match");
-        setIsCreating(false);
         return;
       }
 
+      // PASSWORD VALIDATION
       const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
 
       if (!passwordRegex.test(data.password)) {
         toast.error(
-          "Password must contain 8+ characters, uppercase and number",
+          "Password must contain 8+ characters, uppercase and number"
         );
-        setIsCreating(false);
         return;
       }
 
+      // CREATE ACCOUNT
       const { data: signupData, error } = await authClient.signUp.email({
         name: data.name,
         email: data.email,
@@ -111,7 +113,6 @@ export default function SignupPage() {
 
       if (error) {
         toast.error(error.message || "Signup failed");
-        setIsCreating(false);
         return;
       }
 
@@ -120,8 +121,6 @@ export default function SignupPage() {
       const { data: session } = await authClient.getSession();
       const userRole = session?.user?.role;
 
-      setIsCreating(false);
-
       if (userRole === "librarian") {
         router.push("/dashboard/librarian/overview");
       } else if (userRole === "admin") {
@@ -129,41 +128,54 @@ export default function SignupPage() {
       } else {
         router.push("/dashboard/user/overview");
       }
+
     } catch (error) {
       console.error("Signup Failed:", error);
       toast.error("Something went wrong. Please try again.");
+    } finally {
       setIsCreating(false);
     }
   };
 
   return (
-    <main className="min-h-screen w-full bg-white">
+    <main className="min-h-dvh w-full overflow-x-hidden bg-white">
+
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-2"
+        className="grid min-h-dvh w-full grid-cols-1 lg:grid-cols-2"
       >
+
         {/* LEFT PANEL */}
-        <section className="relative hidden min-h-screen flex-col justify-between overflow-hidden bg-[#172554] p-10 text-white lg:flex xl:p-14 2xl:p-20">
-          {/* Background Decorations */}
+        <section className="relative hidden min-h-dvh flex-col justify-between overflow-hidden bg-[#172554] p-10 text-white lg:flex xl:p-14 2xl:p-20">
+
           <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-blue-400/15 blur-3xl" />
+
           <div className="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-indigo-400/20 blur-3xl" />
 
-          {/* Brand */}
-          <div className="relative z-10 flex items-center gap-3">
+          {/* BRAND */}
+          <Link href="/" className="relative z-10 flex items-center gap-3">
+
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-blue-900 shadow-lg">
               <BookOpen size={25} />
             </div>
 
             <div>
-              <h2 className="text-xl font-bold tracking-tight">BookNest</h2>
-              <p className="text-xs text-blue-200">Your Digital Bookstore</p>
-            </div>
-          </div>
+              <h2 className="text-xl font-bold tracking-tight">
+                BookNest
+              </h2>
 
-          {/* Main Content */}
+              <p className="text-xs text-blue-200">
+                Your Digital Bookstore
+              </p>
+            </div>
+
+          </Link>
+
+          {/* MAIN CONTENT */}
           <div className="relative z-10 my-12 max-w-xl">
+
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-blue-100">
               <Sparkles size={15} />
               <span>Discover. Read. Grow.</span>
@@ -178,8 +190,9 @@ export default function SignupPage() {
               inspire, educate, and entertain you.
             </p>
 
-            {/* Features */}
+            {/* FEATURES */}
             <div className="mt-12 space-y-6">
+
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10">
                   <BookOpen size={21} />
@@ -187,6 +200,7 @@ export default function SignupPage() {
 
                 <div>
                   <h3 className="font-semibold">Explore Books</h3>
+
                   <p className="mt-1 text-sm text-blue-200">
                     Discover books across different categories.
                   </p>
@@ -200,6 +214,7 @@ export default function SignupPage() {
 
                 <div>
                   <h3 className="font-semibold">Join Our Community</h3>
+
                   <p className="mt-1 text-sm text-blue-200">
                     Connect with readers and librarians.
                   </p>
@@ -213,36 +228,49 @@ export default function SignupPage() {
 
                 <div>
                   <h3 className="font-semibold">Secure Experience</h3>
+
                   <p className="mt-1 text-sm text-blue-200">
                     Enjoy a reliable and secure platform.
                   </p>
                 </div>
               </div>
+
             </div>
           </div>
 
-          {/* Footer */}
+          {/* FOOTER */}
           <div className="relative z-10 border-t border-white/15 pt-6 text-sm text-blue-200">
-            © {new Date().getFullYear()} BiblioDrop. All rights reserved.
+            © {new Date().getFullYear()} BookNest. All rights reserved.
           </div>
+
         </section>
 
         {/* RIGHT PANEL */}
-        <section className="flex min-h-screen w-full flex-col justify-center px-5 py-10 sm:px-10 md:px-16 lg:px-12 xl:px-20 2xl:px-28">
-          {/* Mobile Brand */}
-          <div className="mb-9 flex items-center gap-3 lg:hidden">
+        <section className="flex min-h-dvh w-full flex-col justify-center px-5 py-10 sm:px-10 md:px-16 lg:px-12 xl:px-20 2xl:px-28">
+
+          {/* MOBILE BRAND */}
+          <Link
+            href="/"
+            className="mb-9 flex items-center gap-3 lg:hidden"
+          >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-900 text-white">
               <BookOpen size={23} />
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-slate-900">BiblioDrop</h2>
-              <p className="text-xs text-slate-500">Your Digital Bookstore</p>
-            </div>
-          </div>
+              <h2 className="text-xl font-bold text-slate-900">
+                BookNest
+              </h2>
 
-          {/* Heading */}
+              <p className="text-xs text-slate-500">
+                Your Digital Bookstore
+              </p>
+            </div>
+          </Link>
+
+          {/* HEADING */}
           <div className="mb-8">
+
             <p className="mb-2 text-sm font-semibold tracking-wider text-blue-700">
               GET STARTED FOR FREE
             </p>
@@ -252,14 +280,20 @@ export default function SignupPage() {
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-slate-500">
-              Enter your information to create your BiblioDrop account.
+              Enter your information to create your BookNest account.
             </p>
+
           </div>
 
-          {/* Signup Form */}
-          <Form onSubmit={onSubmit} className="flex w-full flex-col gap-5">
-            {/* Full Name */}
+          {/* SIGNUP FORM */}
+          <Form
+            onSubmit={onSubmit}
+            className="flex w-full flex-col gap-5"
+          >
+
+            {/* FULL NAME */}
             <TextField name="name" isRequired>
+
               <Label className="mb-2 text-sm font-semibold text-slate-700">
                 Full Name
               </Label>
@@ -270,10 +304,12 @@ export default function SignupPage() {
               />
 
               <FieldError />
+
             </TextField>
 
-            {/* Email */}
+            {/* EMAIL */}
             <TextField name="email" type="email" isRequired>
+
               <Label className="mb-2 text-sm font-semibold text-slate-700">
                 Email Address
               </Label>
@@ -284,36 +320,43 @@ export default function SignupPage() {
               />
 
               <FieldError />
+
             </TextField>
 
-            {/* Photo URL */}
+            {/* PROFILE PHOTO */}
             <TextField name="image" isRequired>
+
               <Label className="mb-2 text-sm font-semibold text-slate-700">
                 Profile Photo URL
               </Label>
 
               <Input
+                type="url"
                 placeholder="https://example.com/photo.jpg"
                 className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 outline-none transition focus-within:border-blue-500 focus-within:bg-white"
               />
 
               <FieldError />
+
             </TextField>
 
-            {/* Password */}
+            {/* PASSWORD */}
             <TextField
               name="password"
               type={showPassword ? "text" : "password"}
               isRequired
             >
+
               <Label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
                 <LockKeyhole size={16} className="text-slate-400" />
                 Password
               </Label>
 
               <div className="relative">
+
                 <Input
                   placeholder="Enter your password"
+                  onChange={(e) => setPassword(e.target.value)}
                   className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-900 outline-none transition focus-within:border-indigo-500 focus-within:bg-white"
                 />
 
@@ -321,46 +364,69 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-indigo-600"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showPassword ? "Hide password" : "Show password"
+                  }
                 >
-                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                  {showPassword ? (
+                    <EyeOff size={19} />
+                  ) : (
+                    <Eye size={19} />
+                  )}
                 </button>
+
               </div>
 
               <FieldError />
+
             </TextField>
 
-            {/* Confirm Password */}
+            {/* CONFIRM PASSWORD */}
             <TextField
-              name="password"
-              type={showPassword ? "text" : "password"}
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
               isRequired
             >
+
               <Label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
                 <LockKeyhole size={16} className="text-slate-400" />
                 Confirm Password
               </Label>
 
               <div className="relative">
+
                 <Input
-                  placeholder="Enter your password"
+                  placeholder="Confirm your password"
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-sm text-slate-900 outline-none transition focus-within:border-indigo-500 focus-within:bg-white"
                 />
 
                 <button
                   type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
+                  onClick={() =>
+                    setShowConfirmPassword((prev) => !prev)
+                  }
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-indigo-600"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide confirm password"
+                      : "Show confirm password"
+                  }
                 >
-                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={19} />
+                  ) : (
+                    <Eye size={19} />
+                  )}
                 </button>
+
               </div>
 
               <FieldError />
+
             </TextField>
 
-            {/* Password Match */}
+            {/* PASSWORD MATCH INDICATOR */}
             {confirmPassword && (
               <div
                 className={`-mt-3 flex items-center gap-2 text-xs font-medium ${
@@ -381,8 +447,12 @@ export default function SignupPage() {
               </div>
             )}
 
-            {/* Account Type */}
-            <input type="hidden" name="role" value={role} />
+            {/* ACCOUNT TYPE */}
+            <input
+              type="hidden"
+              name="role"
+              value={role}
+            />
 
             <Select
               selectedKey={role}
@@ -390,6 +460,7 @@ export default function SignupPage() {
                 if (key) setRole(String(key));
               }}
             >
+
               <Label className="mb-2 text-sm font-semibold text-slate-700">
                 Account Type
               </Label>
@@ -401,14 +472,19 @@ export default function SignupPage() {
 
               <Select.Popover>
                 <ListBox>
-                  <ListBox.Item id="user">User</ListBox.Item>
+                  <ListBox.Item id="user">
+                    User
+                  </ListBox.Item>
 
-                  <ListBox.Item id="librarian">Librarian</ListBox.Item>
+                  <ListBox.Item id="librarian">
+                    Librarian
+                  </ListBox.Item>
                 </ListBox>
               </Select.Popover>
+
             </Select>
 
-            {/* Create Account */}
+            {/* CREATE ACCOUNT */}
             <Button
               type="submit"
               isDisabled={isCreating}
@@ -427,8 +503,9 @@ export default function SignupPage() {
               )}
             </Button>
 
-            {/* Divider */}
+            {/* DIVIDER */}
             <div className="flex w-full items-center gap-4">
+
               <div className="h-px flex-1 bg-slate-200" />
 
               <span className="text-xs font-medium text-slate-400">
@@ -436,9 +513,10 @@ export default function SignupPage() {
               </span>
 
               <div className="h-px flex-1 bg-slate-200" />
+
             </div>
 
-            {/* Google Signup */}
+            {/* GOOGLE SIGNUP */}
             <Button
               type="button"
               onPress={handleGoogleSignup}
@@ -448,11 +526,13 @@ export default function SignupPage() {
               <BsGoogle className="text-base text-red-500" />
               Continue with Google
             </Button>
+
           </Form>
 
-          {/* Login */}
+          {/* LOGIN LINK */}
           <p className="mt-7 text-center text-sm text-slate-500">
             Already have an account?
+
             <Link
               href={`/login?redirect=${encodeURIComponent(redirectTo)}`}
               className="ml-1 font-semibold text-blue-700 transition hover:text-blue-900"
@@ -461,13 +541,29 @@ export default function SignupPage() {
             </Link>
           </p>
 
-          {/* Security Note */}
+          {/* SECURITY NOTE */}
           <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-400">
             <ShieldCheck size={14} />
             Your information is protected and secure.
           </div>
+
         </section>
       </motion.div>
     </main>
+  );
+}
+
+/* PAGE WRAPPER WITH SUSPENSE */
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh w-full items-center justify-center bg-white">
+          <Loader2 className="animate-spin text-blue-900" size={28} />
+        </div>
+      }
+    >
+      <SignupPageContent />
+    </Suspense>
   );
 }
